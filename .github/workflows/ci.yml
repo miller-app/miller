@@ -19,10 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install LLVM on Windows
-        if: runner.os == 'Windows'
-        run: choco install -y llvm
+      # - name: Install LLVM on Windows
+        # if: runner.os == 'Windows'
+        # run: choco install -y llvm
         # run: echo "::add-path::C:\\msys64\\mingw64\\bin"
+
+      - name: Cache LLVM and Clang
+        if: runner.os == "Windows"
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: llvm-10.0
+
+      - name: Install LLVM and Clang
+        if: runner.os == "Windows"
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "10.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - uses: actions/cache@v2
         with:
