@@ -36,11 +36,12 @@ jobs:
         if: runner.os == 'Windows'
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "10.0"
+          version: "11.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - uses: actions/cache@v2
+      - name: Cache Cargo
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
