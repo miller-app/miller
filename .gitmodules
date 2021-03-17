@@ -1,3 +1,0 @@
-[submodule "pd-bindgen/pure-data"]
-	path = pd-bindgen/pure-data
-	url = https://github.com/pure-data/pure-data.git
