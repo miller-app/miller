@@ -1,0 +1,39 @@
+name: CI
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, macOS-latest, ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install LLVM on Windows
+        if: runner.os == 'Windows'
+        run: choco install -y llvm
+        # run: echo "::add-path::C:\\msys64\\mingw64\\bin"
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build
+        run: cargo build
+
+      - name: Test
+        run: cargo test
