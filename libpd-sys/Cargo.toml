@@ -1,5 +1,5 @@
 [package]
-name = "pd-bindgen"
+name = "libpd-sys"
 version = "0.1.0"
 authors = ["Ales Tsurko <ales.tsurko@gmail.com>"]
 edition = "2018"

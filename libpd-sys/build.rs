@@ -15,15 +15,33 @@ fn main() {
 }
 
 fn compile() {
-    let files_to_compile: Result<Vec<PathBuf>, GlobError> = glob("pure-data/src/*.c")
-        .expect("Can't sources to compile.")
-        .collect();
+    let pd_sources = glob("libpd/pure-data/src/*.c")
+        .expect("Can't collect Pd sources to compile.")
+        .collect::<Result<Vec<PathBuf>, GlobError>>()
+        .unwrap();
+    let libpd_sources = glob("libpd/libpd_wrapper/**/*.c")
+        .expect("Can't collect libpd sources to compile.")
+        .collect::<Result<Vec<PathBuf>, GlobError>>()
+        .unwrap();
 
     let mut compiler = cc::Build::new();
 
     compiler
-        .include("pure-data/src")
-        .files(files_to_compile.unwrap())
+        .include("libpd/pure-data/src")
+        .include("libpd/libpd_wrapper")
+        .files(pd_sources)
+        .files(libpd_sources)
+        .file("libpd/pure-data/extra/bob~/bob~.c")
+        .file("libpd/pure-data/extra/bonk~/bonk~.c")
+        .file("libpd/pure-data/extra/choice/choice.c")
+        .file("libpd/pure-data/extra/fiddle~/fiddle~.c")
+        .file("libpd/pure-data/extra/loop~/loop~.c")
+        .file("libpd/pure-data/extra/lrshift~/lrshift~.c")
+        .file("libpd/pure-data/extra/pique/pique.c")
+        .file("libpd/pure-data/extra/pd~/pdsched.c")
+        .file("libpd/pure-data/extra/pd~/pd~.c")
+        .file("libpd/pure-data/extra/sigmund~/sigmund~.c")
+        .file("libpd/pure-data/extra/stdout/stdout.c")
         .define("PD", None)
         .define("USEAPI_DUMMY", None)
         .warnings(false);
@@ -71,7 +89,8 @@ fn generate_bindings() {
     );
 
     let bindgen = bindgen
-        .clang_arg("-Ipure-data/src")
+        .clang_arg("-Ilibpd/pure-data/src")
+        .clang_arg("-Ilibpd/libpd_wrapper")
         .clang_arg("-DPD")
         .clang_arg("-DUSEAPI_DUMMY")
         .header("wrapper.h")
