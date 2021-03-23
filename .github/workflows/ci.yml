@@ -36,7 +36,7 @@ jobs:
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Install Alsa development headers (Linux)
-        if: runner.os == "Linux"
+        if: runner.os == 'Linux'
         run: sudo apt-get install -y libasound2-dev
 
       - name: Cache Cargo
