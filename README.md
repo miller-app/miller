@@ -1,3 +1,3 @@
 # Miller
 
-Modern front-end for Pure Data programming language.
+Modern front-end for Pure Data audio programming environment.
