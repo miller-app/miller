@@ -23,7 +23,6 @@
 #ifndef _MESSAGE_OBJECT_H_
 #define _MESSAGE_OBJECT_H_
 
-
 #include <list>
 #include <string>
 #include <vector>
