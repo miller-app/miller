@@ -28,6 +28,15 @@ fn compile() {
         builder = builder.flag("-framework Accelerate")
     }
 
+    if cfg!(windows) {
+        env::set_var("CC", "gcc");
+        env::set_var("CXX", "g++");
+
+        builder = builder
+            .target("x86_64-pc-windows-gnu")
+            .host("x86_64-pc-windows-gnu");
+    }
+
     builder.compile("zengarden");
 }
 
