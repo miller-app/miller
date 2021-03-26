@@ -23,7 +23,11 @@
 #ifndef _PD_MESSAGE_H_
 #define _PD_MESSAGE_H_
 
+#ifdef _WIN32
+#include <malloc.h>
+#else
 #include <alloca.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
