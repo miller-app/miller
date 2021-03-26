@@ -35,9 +35,17 @@ jobs:
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - name: Install Alsa development headers (Linux)
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: choco install libsndfile
+
+      - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y libasound2-dev
+        run: sudo apt-get install -y libasound2-dev libsndfile-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libsndfile
 
       - name: Cache Cargo
         uses: actions/cache@v2
