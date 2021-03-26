@@ -1,0 +1,23 @@
+#N canvas 614 276 526 371 10;
+#X obj 238 271 samphold~;
+#X obj 101 23 loadbang;
+#X obj 173 24 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 373 229 phasor~ 220;
+#X obj 389 129 line~;
+#X msg 142 156 open DspSampHold.golden.wav \, start;
+#X msg 288 93 0 \, 1 1000;
+#X obj 30 153 del 1000;
+#X msg 40 198 stop;
+#X obj 236 322 dac~;
+#X connect 0 0 9 0;
+#X connect 1 0 5 0;
+#X connect 1 0 6 0;
+#X connect 1 0 7 0;
+#X connect 2 0 5 0;
+#X connect 2 0 6 0;
+#X connect 2 0 7 0;
+#X connect 3 0 0 0;
+#X connect 4 0 0 1;
+#X connect 6 0 4 0;
+#X connect 7 0 8 0;

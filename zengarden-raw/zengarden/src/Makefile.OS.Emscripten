@@ -1,0 +1,5 @@
+# TODO: compile with SSE
+PLATFORM_TARGETS=libzengarden
+# CXXFLAGS = -g3 -std=c++11 -s SAFE_HEAP=1 -I$(my-dir) $(SNDFILE_INCLUDE)
+MAKE_SO=$(CC) -o $(1) $(CXXFLAGS) $(2) $(3)
+SO_EXTENSION=bc

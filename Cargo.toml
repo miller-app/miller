@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 cpal = "0.13"
 libpd-sys = { version = "0.1", path = "libpd-sys" }
+zengarden-raw = { version = "0.1", path = "zengarden-raw" }
 
 [workspace]
-members = [ "libpd-sys" ]
+members = [ "libpd-sys", "zengarden-raw" ]
