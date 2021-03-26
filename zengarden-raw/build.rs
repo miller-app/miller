@@ -37,6 +37,8 @@ fn generate_bindings() {
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
     builder
         .clang_arg("-Izengarden/src")
+        .clang_arg("-std=c++11")
+        .opaque_type("std::.*")
         .header("wrapper.hpp")
         .generate()
         .expect("Unable to generate bindings")
