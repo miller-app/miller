@@ -49,6 +49,7 @@ fn generate_bindings() {
         .clang_arg("-std=c++11")
         .opaque_type("std::.*")
         .header("wrapper.hpp")
+        .blacklist_type("_Tp")
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))
