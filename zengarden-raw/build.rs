@@ -1,6 +1,7 @@
 use std::env;
 use std::path::PathBuf;
 
+use bindgen::EnumVariation;
 use cc;
 use glob::{glob, GlobError};
 
@@ -49,7 +50,7 @@ fn generate_bindings() {
         .clang_arg("-std=c++11")
         .opaque_type("std::.*")
         .header("wrapper.hpp")
-        .blacklist_type("_Tp")
+        .default_enum_style(EnumVariation::NewType { is_bitfield: false })
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))
