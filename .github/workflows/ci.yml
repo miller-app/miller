@@ -35,13 +35,6 @@ jobs:
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install libsndfile
-          refreshenv
-          echo "%PATH%" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get install -y libasound2-dev libsndfile-dev
@@ -59,7 +52,23 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
+      # - name: Install dependencies (Windows)
+        # if: runner.os == 'Windows'
+        # run: |
+          # choco install libsndfile
+          # refreshenv
+          # echo "%PATH%" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install libsndfile
+          refreshenv
+          # echo "%PATH%" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          cargo build
+
       - name: Build
+        if: runner.os != 'Windows'
         run: cargo build
 
       - name: Test
