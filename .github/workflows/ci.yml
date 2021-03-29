@@ -39,7 +39,8 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install libsndfile
-          refreshenv
+          call refreshenv
+          echo ::set-env name=PATH::%PATH%
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
