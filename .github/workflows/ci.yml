@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install dependencies (Linux)
+      - name: Install dependencies
         run: sudo apt-get install -y libasound2-dev libsndfile-dev
 
       - name: Cache Cargo
@@ -42,7 +42,7 @@ jobs:
     # steps:
       # - uses: actions/checkout@v2
 # 
-      # - name: Install dependencies (macOS)
+      # - name: Install dependencies
         # run: brew install libsndfile
 # 
       # - name: Cache Cargo
