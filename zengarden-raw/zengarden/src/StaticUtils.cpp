@@ -20,7 +20,12 @@
  *
  */
 
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#include <cmath>
+#else
 #include <math.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
