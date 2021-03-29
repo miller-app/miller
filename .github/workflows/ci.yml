@@ -40,7 +40,7 @@ jobs:
         run: |
           choco install libsndfile
           refreshenv
-          echo %PATH%>%GITHUB_PATH%
+          echo "%PATH%" >>"%GITHUB_PATH%"
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
