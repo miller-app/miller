@@ -48,8 +48,6 @@ fn generate_bindings() {
     let builder = bindgen::Builder::default();
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
-    env::set_var("CC", "clang");
-    env::set_var("CXX", "clang++");
 
     builder
         .clang_arg("-Izengarden/src")
