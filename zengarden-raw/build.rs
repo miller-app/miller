@@ -7,7 +7,7 @@ use glob::{glob, GlobError};
 
 fn main() {
     compile();
-    // generate_bindings();
+    generate_bindings();
 }
 
 fn compile() {
