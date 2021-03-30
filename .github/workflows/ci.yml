@@ -10,30 +10,30 @@ on:
 
 jobs:
 
-  linux:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install dependencies
-        run: sudo apt-get install -y libasound2-dev libsndfile-dev
-
-      - name: Cache Cargo
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build 
-        run: cargo build
-
-      - name: Test
-        run: cargo test
+  # linux:
+# 
+    # runs-on: ubuntu-latest
+# 
+    # steps:
+      # - uses: actions/checkout@v2
+# 
+      # - name: Install dependencies
+        # run: sudo apt-get install -y libasound2-dev libsndfile-dev
+# 
+      # - name: Cache Cargo
+        # uses: actions/cache@v2
+        # with:
+          # path: |
+            # ~/.cargo/registry
+            # ~/.cargo/git
+            # target
+          # key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+# 
+      # - name: Build 
+        # run: cargo build
+# 
+      # - name: Test
+        # run: cargo test
 
   # macos:
 # 
@@ -96,9 +96,11 @@ jobs:
       - name: Build
         env: 
           CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
-        run: cargo build
+        run: |
+          $Env:PATH+=";C:\msys64\mingw64\bin"
+          cargo build
 
       - name: Test
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
         run: cargo test

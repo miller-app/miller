@@ -34,10 +34,8 @@ fn compile() {
         env::set_var("CXX", "g++");
 
         builder = builder
-            .target("x86_64-w64-mingw32")
-            .host("x86_64-w64-mingw32")
-            // .target("x86_64-pc-windows-gnu")
-            // .host("x86_64-pc-windows-gnu");
+            .target("x86_64-pc-windows-gnu")
+            .host("x86_64-pc-windows-gnu");
     }
 
     builder.compile("zengarden");
