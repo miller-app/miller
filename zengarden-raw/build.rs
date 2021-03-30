@@ -21,6 +21,9 @@ fn compile() {
     let mut builder = compiler
         .cpp(true)
         .include("zengarden/src")
+        .include("C:/tools/msys64/mingw64/include/c++/10.2.0")
+        .include("C:/tools/msys64/mingw64/include")
+        .include("C:/tools/msys64/mingw64/x86_64-w64-mingw32/include")
         .files(sources)
         .warnings(false)
         .flag("-std=c++11");
@@ -45,6 +48,9 @@ fn generate_bindings() {
     let builder = bindgen::Builder::default();
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
+    env::set_var("CC", "");
+    env::set_var("CXX", "");
+
     builder
         .clang_arg("-Izengarden/src")
         .clang_arg("-std=c++11")
