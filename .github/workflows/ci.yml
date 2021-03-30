@@ -97,7 +97,7 @@ jobs:
         env: 
           CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
         run: |
-          $Env:PATH+=";C:\msys64\mingw64\bin"
+          $Env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include"
           cargo build
 
       - name: Test
