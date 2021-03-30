@@ -401,15 +401,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libpd-sys"
-version = "0.1.0"
-dependencies = [
- "bindgen 0.57.0",
- "cc",
- "glob",
-]
-
-[[package]]
 name = "lock_api"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -447,7 +438,6 @@ name = "miller"
 version = "0.1.0"
 dependencies = [
  "cpal",
- "libpd-sys",
  "zengarden-raw",
 ]
 
