@@ -64,7 +64,7 @@ jobs:
 
     runs-on: windows-latest
     env:
-      LLVM_PATH: ${{ runner.temp }}/llvm
+      LLVM_PATH: C:/temp/llvm
 
     steps:
       - uses: actions/checkout@v2
