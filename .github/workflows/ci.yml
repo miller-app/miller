@@ -102,6 +102,9 @@ jobs:
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
           $Env:PATH+=";C:\Program Files\libsndfile\lib;C:\Program Files\libsndfile\include;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include"
+          rustup set profile default
+          rustup toolchain install stable-gnu
+          rustup default stable-gnu
           cargo build
 
       - name: Test
