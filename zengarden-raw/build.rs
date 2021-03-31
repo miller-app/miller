@@ -21,9 +21,6 @@ fn compile() {
     let mut builder = compiler
         .cpp(true)
         .include("zengarden/src")
-        .include("C:/tools/msys64/mingw64/include/c++/10.2.0")
-        .include("C:/tools/msys64/mingw64/include")
-        .include("C:/tools/msys64/mingw64/x86_64-w64-mingw32/include")
         .files(sources)
         .warnings(false)
         .flag("-std=c++11");
@@ -45,14 +42,17 @@ fn compile() {
 }
 
 fn generate_bindings() {
-    let builder = bindgen::Builder::default();
+    let mut builder = bindgen::Builder::default();
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
 
+    builder = builder.clang_arg("-Izengarden/src").clang_arg("-std=c++11");
+
+    if cfg!(windows) {
+        builder = builder.clang_arg("--target=x86_64-pc-windows-gnu");
+    }
+
     builder
-        .clang_arg("-Izengarden/src")
-        .clang_arg("-std=c++11")
-        .clang_arg("--target=x86_64-pc-windows-gnu")
         .opaque_type("std::.*")
         .header("wrapper.hpp")
         .default_enum_style(EnumVariation::NewType { is_bitfield: false })
