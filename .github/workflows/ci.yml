@@ -101,11 +101,20 @@ jobs:
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
-          $Env:PATH+=";C:\Program Files\libsndfile\lib;C:\Program Files\libsndfile\include;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include"
-          rustup set profile default
-          rustup toolchain install stable-gnu
-          rustup default stable-gnu
-          cargo build
+          $Env:PATH+=";C:\Program Files\libsndfile\lib;\
+                      C:\Program Files\libsndfile\include;\
+                      C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;\
+                      C:\msys64\mingw64\include;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\include"
+          # rustup set profile default
+          # rustup target add gnu
+          # rustup toolchain install stable-gnu
+          # rustup default stable-gnu
+          # rustup target add x86_64-pc-windows-gnu
+          # rustup toolchain install stable-x86_64-pc-windows-gnu
+          cargo build --target x86_64-pc-windows-gnu
 
       - name: Test
         env: 
