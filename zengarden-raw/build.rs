@@ -52,6 +52,7 @@ fn generate_bindings() {
     builder
         .clang_arg("-Izengarden/src")
         .clang_arg("-std=c++11")
+        .clang_arg("--target=x86_64-pc-windows-gnu")
         .opaque_type("std::.*")
         .header("wrapper.hpp")
         .default_enum_style(EnumVariation::NewType { is_bitfield: false })
