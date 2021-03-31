@@ -23,6 +23,8 @@ fn compile() {
         .include("zengarden/src")
         .files(sources)
         .warnings(false)
+        .flag("-lregex")
+        .flag("-lpthread")
         .flag("-std=c++11");
 
     if cfg!(macos) {
