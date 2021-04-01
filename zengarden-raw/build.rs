@@ -6,7 +6,7 @@ use cc;
 use glob::{glob, GlobError};
 
 fn main() {
-    // compile();
+    compile();
     generate_bindings();
 }
 
@@ -24,7 +24,7 @@ fn compile() {
         .files(sources)
         .warnings(false)
         .flag("-lregex")
-        .flag("-lpthread")
+        .flag("-pthread")
         .flag("-std=c++11");
 
     if cfg!(macos) {
