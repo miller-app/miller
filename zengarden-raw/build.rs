@@ -23,7 +23,7 @@ fn compile() {
         .include("zengarden/src")
         .files(sources)
         .warnings(false)
-        .flag("-lregex")
+        .flag("-regex")
         .flag("-pthread")
         .flag("-std=c++11");
 
