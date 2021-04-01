@@ -24,7 +24,7 @@ fn compile() {
         .files(sources)
         .warnings(false)
         .flag("-lsndfile")
-        .flag("-regex")
+        .flag("-lregex")
         .flag("-pthread")
         .flag("-std=c++11");
 
