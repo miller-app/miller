@@ -3,7 +3,6 @@ name = "zengarden-raw"
 version = "0.1.0"
 authors = ["Ales Tsurko <ales.tsurko@gmail.com>"]
 edition = "2018"
-links = "sndfile"
 
 [lib]
 crate-type = ["dylib"]
