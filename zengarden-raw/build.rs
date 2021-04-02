@@ -7,7 +7,7 @@ use glob::{glob, GlobError};
 
 fn main() {
     compile();
-    // generate_bindings();
+    generate_bindings();
 }
 
 fn compile() {
@@ -18,13 +18,8 @@ fn compile() {
 
     let mut compiler = cc::Build::new();
 
-    println!("cargo:rustc-link-lib=regex");
-    println!("cargo:rustc-link-lib=pthread");
-
     let mut builder = compiler
         .cpp(true)
-        .flag("-lsndfile")
-        .flag("-pthread")
         .flag("-std=c++11")
         .include("zengarden/src")
         .files(sources)
@@ -38,13 +33,17 @@ fn compile() {
         env::set_var("CC", "gcc");
         env::set_var("CXX", "g++");
 
-        // println!("cargo:rustc-link-lib=dylib=sndfile");
         builder = builder
             .target("x86_64-pc-windows-gnu")
             .host("x86_64-pc-windows-gnu");
     }
 
     builder.compile("zengarden");
+
+    println!("cargo:rustc-link-search=C:/Program Files/libsndfile/bin"); // FIXME
+    println!("cargo:rustc-link-lib=sndfile");
+    println!("cargo:rustc-link-lib=regex");
+    println!("cargo:rustc-link-lib=pthread");
 }
 
 fn generate_bindings() {
