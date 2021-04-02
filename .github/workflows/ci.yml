@@ -97,7 +97,7 @@ jobs:
 
       - name: Build
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
@@ -115,7 +115,7 @@ jobs:
 
       - name: Test
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: cargo test
