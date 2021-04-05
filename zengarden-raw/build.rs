@@ -6,7 +6,7 @@ use cc;
 use glob::{glob, GlobError};
 
 fn main() {
-    compile();
+    // compile();
     generate_bindings();
 }
 
@@ -26,7 +26,7 @@ fn compile() {
         .warnings(false);
 
     if cfg!(macos) {
-        builder = builder.flag("-framework Accelerate")
+        println!("cargo:rustc-link-lib=framework=Accelerate");
     }
 
     if cfg!(windows) {
@@ -36,11 +36,16 @@ fn compile() {
         builder = builder
             .target("x86_64-pc-windows-gnu")
             .host("x86_64-pc-windows-gnu");
+
+        println!("cargo:rustc-link-search=C:/Program Files/libsndfile/lib");
     }
 
     builder.compile("zengarden");
 
-    println!("cargo:rustc-link-search=C:/Program Files/libsndfile/bin"); // FIXME
+    if let Ok(sndfile_path) = env::var("LIBSNDFILE_PATH") {
+        println!("cargo:rustc-link-search={}", sndfile_path);
+    }
+
     println!("cargo:rustc-link-lib=sndfile");
     println!("cargo:rustc-link-lib=regex");
     println!("cargo:rustc-link-lib=pthread");
