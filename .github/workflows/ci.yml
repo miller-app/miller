@@ -101,9 +101,8 @@ jobs:
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
-          PATH: $PATH;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\x86_64-w64-mingw32\bin;C:\msys64\mingw64\x86_64-w64-mingw32\lib
         run: |
-          # $Env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\x86_64-w64-mingw32\bin"
+          $Env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\x86_64-w64-mingw32\bin;C:\msys64\mingw64\x86_64-w64-mingw32\lib"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo build --target x86_64-pc-windows-gnu
@@ -114,9 +113,8 @@ jobs:
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
-          PATH: $PATH;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\x86_64-w64-mingw32\bin;C:\msys64\mingw64\x86_64-w64-mingw32\lib
         run: |
-          # $Env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\x86_64-w64-mingw32\bin"
+          $Env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\x86_64-w64-mingw32\bin;C:\msys64\mingw64\x86_64-w64-mingw32\lib"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo test --target x86_64-pc-windows-gnu
