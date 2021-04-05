@@ -6,7 +6,7 @@ use cc;
 use glob::{glob, GlobError};
 
 fn main() {
-    // compile();
+    compile();
     generate_bindings();
 }
 
