@@ -95,19 +95,19 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: msys2-devel base-devel mingw-w64-x86_64-toolchain
-
       - name: Build
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
+          $env:PATH+=";C:\msys64\mingw64\bin;\
+                      C:\msys64\mingw64\lib;\
+                      C:\msys64\mingw64\include;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\include"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo build --target x86_64-pc-windows-gnu
