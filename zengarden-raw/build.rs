@@ -48,8 +48,11 @@ fn compile() {
     }
 
     println!("cargo:rustc-link-lib=sndfile");
-    println!("cargo:rustc-link-lib=regex");
     println!("cargo:rustc-link-lib=pthread");
+
+    if cfg!(windows) {
+        println!("cargo:rustc-link-lib=regex");
+    }
 }
 
 fn generate_bindings() {
