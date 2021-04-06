@@ -7,7 +7,7 @@ use glob::{glob, GlobError};
 
 fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
-    compile();
+    // compile();
     generate_bindings();
 }
 
@@ -58,13 +58,11 @@ fn generate_bindings() {
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
 
     builder = builder
-        .clang_arg("-x")
-        .clang_arg("c++")
         .clang_arg("-Izengarden/src")
         .clang_arg("-std=c++11");
 
     if cfg!(windows) {
-        builder = builder.clang_arg("--target=x86_64-pc-windows-gnu");
+        // builder = builder.clang_arg("--target=x86_64-pc-windows-gnu");
     }
 
     builder
