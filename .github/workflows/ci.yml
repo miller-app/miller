@@ -99,8 +99,8 @@ jobs:
         env: 
           CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
-          # LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
-          # LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
+          LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
+          LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
           $Env:Path+=";C:\msys64\mingw64\bin;\
                       C:\msys64\mingw64\lib;\
