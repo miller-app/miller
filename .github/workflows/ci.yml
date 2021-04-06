@@ -95,16 +95,16 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: msys2/setup-msys2@v2
-        with: 
-          msystem: MSYS
-          install: base-devel gcc mingw-w64-x86_64-toolchain
-          update: true
+      # - uses: msys2/setup-msys2@v2
+        # with: 
+          # msystem: MSYS
+          # install: base-devel gcc mingw-w64-x86_64-toolchain
+          # update: true
 
       - name: Build
         # shell: bash
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\include\c++\10.2.0;C:\msys64\mingw64\x86_64-w64-mingw32\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\include\c++\10.2.0;C:\msys64\mingw64\include\c++\10.2.0\bits;C:\msys64\mingw64\x86_64-w64-mingw32\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
