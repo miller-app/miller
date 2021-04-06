@@ -102,7 +102,7 @@ jobs:
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
-          $Env:Path="C:\msys64\mingw64\bin;C:\msys64\mingw64\include;$Env:Path"
+          $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
                       # C:\msys64\mingw64\lib;\
                       # C:\msys64\mingw64\include;\
                       # C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
