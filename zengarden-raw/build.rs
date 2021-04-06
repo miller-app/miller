@@ -6,7 +6,8 @@ use cc;
 use glob::{glob, GlobError};
 
 fn main() {
-    compile();
+    println!("cargo:rerun-if-changed=wrapper.hpp");
+    // compile();
     generate_bindings();
 }
 

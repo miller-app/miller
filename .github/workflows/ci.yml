@@ -102,12 +102,7 @@ jobs:
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
-          $env:PATH+=";C:\msys64\mingw64\bin;\
-                      C:\msys64\mingw64\lib;\
-                      C:\msys64\mingw64\include;\
-                      C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
-                      C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
-                      C:\msys64\mingw64\x86_64-w64-mingw32\include"
+          $env:PATH+=";C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\bin;C:\msys64\mingw64\x86_64-w64-mingw32\lib;C:\msys64\mingw64\x86_64-w64-mingw32\include"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo build --target x86_64-pc-windows-gnu
