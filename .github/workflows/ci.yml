@@ -10,55 +10,53 @@ on:
 
 jobs:
 
-  # linux:
-# 
-    # runs-on: ubuntu-latest
-# 
-    # steps:
-      # - uses: actions/checkout@v2
-# 
-      # - name: Install dependencies
-        # run: sudo apt-get install -y libasound2-dev libsndfile-dev
-# 
-      # - name: Cache Cargo
-        # uses: actions/cache@v2
-        # with:
-          # path: |
-            # ~/.cargo/registry
-            # ~/.cargo/git
-            # target
-          # key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-# 
-      # - name: Build 
-        # run: cargo build
-# 
-      # - name: Test
-        # run: cargo test
+  linux:
+    runs-on: ubuntu-latest
 
-  # macos:
-# 
-    # runs-on: macos-latest
-# 
-    # steps:
-      # - uses: actions/checkout@v2
-# 
-      # - name: Install dependencies
-        # run: brew install libsndfile
-# 
-      # - name: Cache Cargo
-        # uses: actions/cache@v2
-        # with:
-          # path: |
-            # ~/.cargo/registry
-            # ~/.cargo/git
-            # target
-          # key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-# 
-      # - name: Build 
-        # run: cargo build
-# 
-      # - name: Test
-        # run: cargo test
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get install -y libasound2-dev libsndfile-dev
+
+      - name: Cache Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build 
+        run: cargo build
+
+      - name: Test
+        run: cargo test
+
+  macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: brew install libsndfile
+
+      - name: Cache Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build 
+        run: cargo build
+
+      - name: Test
+        run: cargo test
 
   windows:
 
