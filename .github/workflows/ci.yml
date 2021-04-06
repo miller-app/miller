@@ -104,7 +104,7 @@ jobs:
       - name: Build
         # shell: bash
         env: 
-          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\x86_64-w64-mingw32\include
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include;C:\msys64\mingw64\include;C:\msys64\mingw64\include\c++\10.2.0;C:\msys64\mingw64\x86_64-w64-mingw32\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
