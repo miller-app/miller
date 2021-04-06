@@ -95,26 +95,19 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: msys2/setup-msys2@v2
-        with: 
-          msystem: MINGW64
-          install: base-devel curl gcc mingw-w64-x86_64-toolchain
-          update: true
-
       - name: Build
-        shell: msys2 {0}
         env: 
           CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
-          LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
-          LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
+          # LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
+          # LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
-          # $Env:Path+=";C:\msys64\mingw64\bin;\
-                      # C:\msys64\mingw64\lib;\
-                      # C:\msys64\mingw64\include;\
-                      # C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
-                      # C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
-                      # C:\msys64\mingw64\x86_64-w64-mingw32\include"
+          $Env:Path+=";C:\msys64\mingw64\bin;\
+                      C:\msys64\mingw64\lib;\
+                      C:\msys64\mingw64\include;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
+                      C:\msys64\mingw64\x86_64-w64-mingw32\include"
           # export PATH="/c/msys64/mingw64/bin:\
                        # /c/msys64/mingw64/lib:\
                        # /c/msys64/mingw64/include:\
@@ -122,7 +115,6 @@ jobs:
                        # /c/msys64/mingw64/x86_64-w64-mingw32/lib:\
                        # /c/msys64/mingw64/x86_64-w64-mingw32/include:\
                        # $PATH"
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -- -y
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo build --target x86_64-pc-windows-gnu
