@@ -102,7 +102,7 @@ jobs:
           update: true
 
       - name: Build
-        shell: msys {0}
+        shell: msys2 {0}
         env: 
           CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
           LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
