@@ -32,9 +32,6 @@ generate_wrapper() {
         echo '// ./fetch_sources.sh'
         echo '#include "ZGCallbackFunction.h"'
         echo '#include "ZenGarden.h"'
-        echo '#include "PdMessage.h"'
-        echo '#include "MessageObject.h"'
-        echo '#include "DspObject.h"'
     } >> "$wrapper"
 }
 
