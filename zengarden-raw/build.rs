@@ -58,11 +58,6 @@ fn generate_bindings() {
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
 
     builder = builder
-        .opaque_type("std::.*")
-        .opaque_type("size_type")
-        .opaque_type("std_value")
-        .opaque_type("__gnu_cxx___min")
-        .opaque_type("__gnu_cxx___max")
         .clang_arg("-x")
         .clang_arg("c++")
         .clang_arg("-Izengarden/src")
@@ -75,6 +70,12 @@ fn generate_bindings() {
     builder
         .header("wrapper.hpp")
         .default_enum_style(EnumVariation::NewType { is_bitfield: false })
+        .opaque_type("std::.*")
+        .opaque_type("size_type")
+        .opaque_type("std_value")
+        .blacklist_type("__gnu_cxx___min")
+        .blacklist_type("__gnu_cxx___max")
+        .blacklist_type("size_type")
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))
