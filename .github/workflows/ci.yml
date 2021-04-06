@@ -115,7 +115,13 @@ jobs:
                       # C:\msys64\mingw64\x86_64-w64-mingw32\bin;\
                       # C:\msys64\mingw64\x86_64-w64-mingw32\lib;\
                       # C:\msys64\mingw64\x86_64-w64-mingw32\include"
-          export PATH="/c/msys64/mingw64/bin:/c/msys64/mingw64/lib:/c/msys64/mingw64/include:/c/msys64/mingw64/x86_64-w64-mingw32/bin:/c/msys64/mingw64/x86_64-w64-mingw32/lib:/c/msys64/mingw64/x86_64-w64-mingw32/include:$PATH"
+          export PATH="/c/msys64/mingw64/bin:\
+                       /c/msys64/mingw64/lib:\
+                       /c/msys64/mingw64/include:\
+                       /c/msys64/mingw64/x86_64-w64-mingw32/bin:\
+                       /c/msys64/mingw64/x86_64-w64-mingw32/lib:\
+                       /c/msys64/mingw64/x86_64-w64-mingw32/include:\
+                       $PATH"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
           cargo build --target x86_64-pc-windows-gnu

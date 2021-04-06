@@ -57,14 +57,22 @@ fn generate_bindings() {
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
 
-    builder = builder.clang_arg("-Izengarden/src").clang_arg("-std=c++11");
+    builder = builder
+        .opaque_type("std::.*")
+        .opaque_type("size_type")
+        .opaque_type("std_value")
+        .opaque_type("__gnu_cxx___min")
+        .opaque_type("__gnu_cxx___max")
+        .clang_arg("-x")
+        .clang_arg("c++")
+        .clang_arg("-Izengarden/src")
+        .clang_arg("-std=c++11");
 
     if cfg!(windows) {
         builder = builder.clang_arg("--target=x86_64-pc-windows-gnu");
     }
 
     builder
-        .opaque_type("std::.*")
         .header("wrapper.hpp")
         .default_enum_style(EnumVariation::NewType { is_bitfield: false })
         .generate()
