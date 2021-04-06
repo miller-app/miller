@@ -7,7 +7,7 @@ use glob::{glob, GlobError};
 
 fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
-    // compile();
+    compile();
     generate_bindings();
 }
 
@@ -58,11 +58,6 @@ fn generate_bindings() {
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("Can't get Cargo's $OUT_DIR."));
 
     builder = builder.clang_arg("-Izengarden/src");
-    // .clang_arg("-std=c++11");
-
-    if cfg!(windows) {
-        // builder = builder.clang_arg("--target=x86_64-pc-windows-gnu");
-    }
 
     builder
         .header("wrapper.hpp")
@@ -70,18 +65,6 @@ fn generate_bindings() {
             non_exhaustive: false,
         })
         .opaque_type("std::.*")
-        // .opaque_type("size_type")
-        // .opaque_type("std_value")
-        // .opaque_type("__gnu_cxx___min")
-        // .opaque_type("__gnu_cxx___max")
-        // .opaque_type("_Value")
-        // .opaque_type("_Tp")
-        // .blacklist_item("std_value")
-        // .blacklist_item("__gnu_cxx___min")
-        // .blacklist_item("__gnu_cxx___max")
-        // .blacklist_type("_Value")
-        // .blacklist_type("_Tp")
-        // .blacklist_type("size_type")
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))
