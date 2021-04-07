@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 cpal = "0.13"
-zengarden-raw = { version = "0.1", path = "zengarden-raw" }
+miller-engine = { version = "0.1", path = "miller-engine" }
 
 [workspace]
-members = [ "zengarden-raw" ]
+members = [ "miller-engine", "zengarden-raw" ]

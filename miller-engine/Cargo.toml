@@ -1,5 +1,5 @@
 [package]
-name = "libpd-sys"
+name = "miller-engine"
 version = "0.1.0"
 authors = ["Ales Tsurko <ales.tsurko@gmail.com>"]
 edition = "2018"
@@ -7,8 +7,4 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
-[build-dependencies]
-bindgen = "0.57"
-cc = { version = "1.0", features = ["parallel"] }
-glob = "0.3"
+zengarden-raw = { version = "0.1", path = "../zengarden-raw" }
