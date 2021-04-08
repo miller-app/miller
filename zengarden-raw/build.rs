@@ -7,7 +7,9 @@ use glob::{glob, GlobError};
 
 fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
+
     compile();
+    link();
     generate_bindings();
 }
 
@@ -26,31 +28,33 @@ fn compile() {
         .files(sources)
         .warnings(false);
 
-    if cfg!(macos) {
-        println!("cargo:rustc-link-lib=framework=Accelerate");
-    }
-
-    if cfg!(windows) {
+    if cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
         env::set_var("CXX", "g++");
 
         builder = builder
             .target("x86_64-pc-windows-gnu")
             .host("x86_64-pc-windows-gnu");
-
-        println!("cargo:rustc-link-search=C:/Program Files/libsndfile/lib");
     }
 
     builder.compile("zengarden");
+}
 
+fn link() {
     if let Ok(sndfile_path) = env::var("LIBSNDFILE_PATH") {
         println!("cargo:rustc-link-search={}", sndfile_path);
+    } else if cfg!(target_os = "windows") {
+        println!("cargo:rustc-link-search=C:/Program Files/libsndfile/lib");
     }
 
     println!("cargo:rustc-link-lib=sndfile");
     println!("cargo:rustc-link-lib=pthread");
 
-    if cfg!(windows) {
+    if cfg!(target_os = "macos") {
+        println!("cargo:rustc-link-lib=framework=Accelerate");
+    }
+
+    if cfg!(target_os = "windows") {
         println!("cargo:rustc-link-lib=regex");
     }
 }
