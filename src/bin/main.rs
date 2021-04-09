@@ -62,7 +62,7 @@ fn main() {
             ch_num,
             ch_num,
             blocksize as i32,
-            sr,
+            sr * ch_num as f32,
             Some(callback),
             ptr::null::<c_void>() as *mut _,
         ));
@@ -72,7 +72,7 @@ fn main() {
         zg_graph_attach(graph);
     }
 
-    let mut dropped = vec![0.0f32; blocksize * ch_num as usize];
+    let mut dropped = vec![0.0f32; blocksize];
     let mut offset = 0;
 
     let stream = device
