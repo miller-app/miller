@@ -37,6 +37,58 @@ unsafe extern "C" fn callback(
     ptr::null::<c_void>() as *mut _
 }
 
+struct Loop {
+    offset: usize,
+    blocksize: usize,
+    in_buf: Vec<f32>,
+    out_buf: Vec<f32>,
+    frame: Vec<f32>,
+    context: Context,
+}
+
+impl Loop {
+    fn new(context: Context, blocksize: usize, ch_num: usize) -> Self {
+        Self {
+            offset: 0,
+            blocksize,
+            in_buf: vec![0.0; blocksize * ch_num],
+            out_buf: vec![0.0; blocksize * ch_num],
+            frame: vec![0.0; ch_num],
+            context,
+        }
+    }
+
+    fn next_frame(&mut self) -> &[f32] {
+        if self.offset == self.blocksize {
+            self.fill_buffers();
+            self.offset = 0;
+        }
+
+        self.fill_frame();
+
+        self.offset += 1;
+
+        &self.frame
+    }
+
+    fn fill_buffers(&mut self) {
+        unsafe {
+            zg_context_process(
+                self.context.0,
+                self.in_buf.as_mut_ptr(),
+                self.out_buf.as_mut_ptr(),
+            );
+        }
+    }
+
+    fn fill_frame(&mut self) {
+        for n in 0..self.frame.len() {
+            let buffer_pos = n * self.blocksize + self.offset;
+            self.frame[n] = self.out_buf[buffer_pos];
+        }
+    }
+}
+
 fn main() {
     let host = cpal::default_host();
     let device = host
@@ -62,7 +114,7 @@ fn main() {
             ch_num,
             ch_num,
             blocksize as i32,
-            sr * ch_num as f32,
+            sr,
             Some(callback),
             ptr::null::<c_void>() as *mut _,
         ));
@@ -72,45 +124,19 @@ fn main() {
         zg_graph_attach(graph);
     }
 
-    let mut dropped = vec![0.0f32; blocksize];
-    let mut offset = 0;
+    let mut audio_loop = Loop::new(context, blocksize, ch_num as usize);
 
     let stream = device
         .build_output_stream(
             &config,
             move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                let input = &mut [];
+                let mut offset = 0;
 
-                if offset > 0 {
-                    let start = blocksize - offset;
-                    data[..offset].copy_from_slice(&mut dropped[start..]);
-                    offset = data.len() - offset;
-                } else {
-                    offset = data.len();
-                }
-
-                unsafe {
-                    while offset >= blocksize {
-                        let start = data.len() - offset;
-                        zg_context_process(
-                            context.0,
-                            input.as_mut_ptr(),
-                            data[start..].as_mut_ptr(),
-                        );
-                        offset -= blocksize;
-                    }
-
-                    if offset > 0 {
-                        zg_context_process(
-                            context.0,
-                            input.as_mut_ptr(),
-                            dropped.as_mut_slice().as_mut_ptr(),
-                        );
-
-                        let start = data.len() - offset;
-                        data[start..].copy_from_slice(&mut dropped[..offset]);
-                        offset = blocksize - offset;
-                    }
+                while offset < data.len() {
+                    let frame = audio_loop.next_frame();
+                    let end = offset + frame.len();
+                    data[offset..end].copy_from_slice(frame);
+                    offset = end;
                 }
             },
             move |err| {
