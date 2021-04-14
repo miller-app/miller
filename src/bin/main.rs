@@ -1,5 +1,6 @@
 use std::ffi::{c_void, CString};
 use std::ptr;
+use std::sync::{Arc, Mutex};
 
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
@@ -8,7 +9,7 @@ use cpal::{
 
 use zengarden_raw::*;
 
-struct Context(*mut PdContext);
+struct Context(Arc<Mutex<*mut PdContext>>);
 
 unsafe impl Send for Context {}
 unsafe impl Sync for Context {}
@@ -74,7 +75,7 @@ impl Loop {
     fn fill_buffers(&mut self) {
         unsafe {
             zg_context_process(
-                self.context.0,
+                *(self.context.0.lock().unwrap()),
                 self.in_buf.as_mut_ptr(),
                 self.out_buf.as_mut_ptr(),
             );
@@ -110,17 +111,21 @@ fn main() {
     let context: Context;
 
     unsafe {
-        context = Context(zg_context_new(
+        context = Context(Arc::new(Mutex::new(zg_context_new(
             ch_num,
             ch_num,
             blocksize as i32,
             sr,
             Some(callback),
             ptr::null::<c_void>() as *mut _,
-        ));
+        ))));
         let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
         let filename = CString::new("test.pd").unwrap();
-        let graph = zg_context_new_graph_from_file(context.0, dir.as_ptr(), filename.as_ptr());
+        let graph = zg_context_new_graph_from_file(
+            *(context.0.clone().lock().unwrap()),
+            dir.as_ptr(),
+            filename.as_ptr(),
+        );
         zg_graph_attach(graph);
     }
 
