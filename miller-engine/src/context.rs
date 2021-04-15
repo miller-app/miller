@@ -71,21 +71,25 @@ impl<C: Callback> Context<C> {
     ) -> *mut c_void {
         match msg_t {
             ZGCallbackFunction::ZG_PRINT_STD | ZGCallbackFunction::ZG_PRINT_ERR => {
-                let msg = CStr::from_ptr(ptr as *const c_char).to_string_lossy();
-                let ud: Arc<RwLock<Option<Box<dyn UserData>>>> =
-                    Arc::from_raw(udata as *mut RwLock<Option<Box<dyn UserData>>>);
-                let mut data = ud.write().unwrap();
-
-                match msg_t {
-                    ZGCallbackFunction::ZG_PRINT_STD => C::print_std(&msg, data.as_mut()),
-                    ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(&msg, data.as_mut()),
-                    _ => unreachable!(),
-                }
+                Self::print_callback(msg_t, udata, ptr);
             }
-            _ => (),
+            _ => todo!(),
         }
 
         ptr::null::<c_void>() as *mut _
+    }
+
+    unsafe fn print_callback(msg_t: ZGCallbackFunction, udata: *mut c_void, str_ptr: *mut c_void) {
+        let msg = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy();
+        let ud: Arc<RwLock<Option<Box<dyn UserData>>>> =
+            Arc::from_raw(udata as *mut RwLock<Option<Box<dyn UserData>>>);
+        let mut data = ud.write().unwrap();
+
+        match msg_t {
+            ZGCallbackFunction::ZG_PRINT_STD => C::print_std(&msg, data.as_mut()),
+            ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(&msg, data.as_mut()),
+            _ => unreachable!(),
+        }
     }
 }
 
