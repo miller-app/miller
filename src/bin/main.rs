@@ -1,6 +1,6 @@
 use std::ffi::{c_void, CString};
 use std::ptr;
-use std::sync::{Arc, Mutex};
+use std::sync::{atomic::AtomicPtr, Arc, Mutex};
 
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
@@ -9,7 +9,7 @@ use cpal::{
 
 use zengarden_raw::*;
 
-struct Context(Arc<Mutex<*mut PdContext>>);
+struct Context(AtomicPtr<PdContext>);
 
 unsafe impl Send for Context {}
 unsafe impl Sync for Context {}
@@ -75,7 +75,7 @@ impl Loop {
     fn fill_buffers(&mut self) {
         unsafe {
             zg_context_process(
-                *(self.context.0.lock().unwrap()),
+                *self.context.0.get_mut(),
                 self.in_buf.as_mut_ptr(),
                 self.out_buf.as_mut_ptr(),
             );
@@ -108,21 +108,21 @@ fn main() {
     let ch_num = config.channels as i32;
     let sr = config.sample_rate.0 as f32;
     let blocksize: usize = 64;
-    let context: Context;
+    let mut context: Context;
 
     unsafe {
-        context = Context(Arc::new(Mutex::new(zg_context_new(
+        context = Context(AtomicPtr::new(zg_context_new(
             ch_num,
             ch_num,
             blocksize as i32,
             sr,
             Some(callback),
             ptr::null::<c_void>() as *mut _,
-        ))));
+        )));
         let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
         let filename = CString::new("test.pd").unwrap();
         let graph = zg_context_new_graph_from_file(
-            *(context.0.clone().lock().unwrap()),
+            *context.0.get_mut(),
             dir.as_ptr(),
             filename.as_ptr(),
         );
