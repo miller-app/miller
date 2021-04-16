@@ -1,6 +1,6 @@
 use std::ffi::{c_void, CString};
 use std::ptr;
-use std::sync::{atomic::AtomicPtr, Arc, Mutex};
+use std::sync::atomic::AtomicPtr;
 
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},

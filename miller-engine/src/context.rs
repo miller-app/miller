@@ -10,7 +10,9 @@ use std::sync::{atomic::AtomicPtr, Arc, RwLock};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use zengarden_raw::{zg_context_delete, zg_context_new, PdContext, ZGCallbackFunction};
+use zengarden_raw::{
+    zg_context_delete, zg_context_new, PdContext, ZGCallbackFunction, ZGReceiverMessagePair,
+};
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
 /// configuration (i.e. sample rate, block size, etc.) and audio loop. Contexts aren't supposed to
@@ -86,7 +88,9 @@ impl<C: Callback> Context<C> {
         udata: Option<&mut Box<dyn UserData>>,
         str_ptr: *mut c_void,
     ) -> *mut c_void {
-        let msg: String = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy().into();
+        let msg: String = CStr::from_ptr(str_ptr as *const c_char)
+            .to_string_lossy()
+            .into();
         match msg_t {
             ZGCallbackFunction::ZG_PRINT_STD => C::print_std(msg, udata),
             ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(msg, udata),
@@ -110,6 +114,11 @@ impl<C: Callback> Context<C> {
         udata: Option<&mut Box<dyn UserData>>,
         ptr: *mut c_void,
     ) -> *mut c_void {
+        let raw_message = ptr as *mut ZGReceiverMessagePair;
+        let receiver_name: String = CStr::from_ptr((*raw_message).receiverName)
+            .to_string_lossy()
+            .into();
+        C::receiver_message(ReceiverMessage { receiver_name }, udata);
         ptr::null::<c_void>() as *mut _
     }
 
@@ -117,10 +126,12 @@ impl<C: Callback> Context<C> {
         udata: Option<&mut Box<dyn UserData>>,
         raw_name: *mut c_void,
     ) -> *mut c_void {
-        let name: String = CStr::from_ptr(raw_name as *const c_char).to_string_lossy().into();
+        let name: String = CStr::from_ptr(raw_name as *const c_char)
+            .to_string_lossy()
+            .into();
         match C::cannot_find_obj(name, udata) {
             Some(path) => path.into_bytes().as_mut_slice().as_mut_ptr() as *mut c_void,
-            None => ptr::null::<c_void>() as *mut _
+            None => ptr::null::<c_void>() as *mut _,
         }
     }
 }
