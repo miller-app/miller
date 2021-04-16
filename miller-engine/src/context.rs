@@ -1,14 +1,11 @@
 //! This module contains [Context] and related types.
 
+use std::ffi::{c_void, CStr};
 use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr;
 use std::sync::{atomic::AtomicPtr, Arc, RwLock};
-use std::{
-    ffi::{c_void, CStr},
-    ops::DerefMut,
-};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -69,27 +66,58 @@ impl<C: Callback> Context<C> {
         udata: *mut c_void,
         ptr: *mut c_void,
     ) -> *mut c_void {
+        let ud: Arc<RwLock<Option<Box<dyn UserData>>>> =
+            Arc::from_raw(udata as *mut RwLock<Option<Box<dyn UserData>>>);
+        let mut data = ud.write().unwrap();
+        let udata = data.as_mut();
+
         match msg_t {
             ZGCallbackFunction::ZG_PRINT_STD | ZGCallbackFunction::ZG_PRINT_ERR => {
-                Self::print_callback(msg_t, udata, ptr);
+                Self::print_callback(msg_t, udata, ptr)
             }
-            _ => todo!(),
+            ZGCallbackFunction::ZG_PD_DSP => Self::switch_dsp_callback(udata, ptr),
+            ZGCallbackFunction::ZG_RECEIVER_MESSAGE => Self::receiver_message_callback(udata, ptr),
+            ZGCallbackFunction::ZG_CANNOT_FIND_OBJECT => Self::obj_not_found_callback(udata, ptr),
+        }
+    }
+
+    unsafe fn print_callback(
+        msg_t: ZGCallbackFunction,
+        udata: Option<&mut Box<dyn UserData>>,
+        str_ptr: *mut c_void,
+    ) -> *mut c_void {
+        let msg = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy();
+        match msg_t {
+            ZGCallbackFunction::ZG_PRINT_STD => C::print_std(&msg, udata),
+            ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(&msg, udata),
+            _ => unreachable!(),
         }
 
         ptr::null::<c_void>() as *mut _
     }
 
-    unsafe fn print_callback(msg_t: ZGCallbackFunction, udata: *mut c_void, str_ptr: *mut c_void) {
-        let msg = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy();
-        let ud: Arc<RwLock<Option<Box<dyn UserData>>>> =
-            Arc::from_raw(udata as *mut RwLock<Option<Box<dyn UserData>>>);
-        let mut data = ud.write().unwrap();
+    unsafe fn switch_dsp_callback(
+        udata: Option<&mut Box<dyn UserData>>,
+        ptr: *mut c_void,
+    ) -> *mut c_void {
+        let state = if ptr as i32 > 0 { true } else { false };
+        C::switch_dsp(state, udata);
 
-        match msg_t {
-            ZGCallbackFunction::ZG_PRINT_STD => C::print_std(&msg, data.as_mut()),
-            ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(&msg, data.as_mut()),
-            _ => unreachable!(),
-        }
+        ptr::null::<c_void>() as *mut _
+    }
+
+    unsafe fn receiver_message_callback(
+        udata: Option<&mut Box<dyn UserData>>,
+        ptr: *mut c_void,
+    ) -> *mut c_void {
+        ptr::null::<c_void>() as *mut _
+    }
+
+    unsafe fn obj_not_found_callback(
+        udata: Option<&mut Box<dyn UserData>>,
+        ptr: *mut c_void,
+    ) -> *mut c_void {
+        todo!()
     }
 }
 
@@ -122,8 +150,12 @@ pub trait Callback: fmt::Debug {
     /// send.
     fn receiver_message(_: ReceiverMessage, _: Option<&mut Box<dyn UserData>>) {}
 
-    /// A referenced object/abstraction/external can't be found in the current context.
-    fn cannot_find_obj(_: &'_ str, _: Option<&mut Box<dyn UserData>>) {}
+    /// A referenced object, abstraction or external can't be found in the current context.
+    ///
+    /// Optionally, you can return the path to the object definition.
+    fn cannot_find_obj(_: &'_ str, _: Option<&mut Box<dyn UserData>>) -> Option<String> {
+        None
+    }
 }
 
 /// Message sent to registered receiver.
