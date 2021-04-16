@@ -86,10 +86,10 @@ impl<C: Callback> Context<C> {
         udata: Option<&mut Box<dyn UserData>>,
         str_ptr: *mut c_void,
     ) -> *mut c_void {
-        let msg = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy();
+        let msg: String = CStr::from_ptr(str_ptr as *const c_char).to_string_lossy().into();
         match msg_t {
-            ZGCallbackFunction::ZG_PRINT_STD => C::print_std(&msg, udata),
-            ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(&msg, udata),
+            ZGCallbackFunction::ZG_PRINT_STD => C::print_std(msg, udata),
+            ZGCallbackFunction::ZG_PRINT_ERR => C::print_err(msg, udata),
             _ => unreachable!(),
         }
 
@@ -115,9 +115,13 @@ impl<C: Callback> Context<C> {
 
     unsafe fn obj_not_found_callback(
         udata: Option<&mut Box<dyn UserData>>,
-        ptr: *mut c_void,
+        raw_name: *mut c_void,
     ) -> *mut c_void {
-        todo!()
+        let name: String = CStr::from_ptr(raw_name as *const c_char).to_string_lossy().into();
+        match C::cannot_find_obj(name, udata) {
+            Some(path) => path.into_bytes().as_mut_slice().as_mut_ptr() as *mut c_void,
+            None => ptr::null::<c_void>() as *mut _
+        }
     }
 }
 
@@ -137,10 +141,10 @@ pub trait UserData: fmt::Debug {}
 /// All methods are optional.
 pub trait Callback: fmt::Debug {
     /// Print standard message.
-    fn print_std(_: &'_ str, _: Option<&mut Box<dyn UserData>>) {}
+    fn print_std(_: String, _: Option<&mut Box<dyn UserData>>) {}
 
     /// Print error message.
-    fn print_err(_: &'_ str, _: Option<&mut Box<dyn UserData>>) {}
+    fn print_err(_: String, _: Option<&mut Box<dyn UserData>>) {}
 
     /// Suggestion to turn on or off context signal processing. The message is called only when the
     /// context's process function is running.
@@ -152,8 +156,10 @@ pub trait Callback: fmt::Debug {
 
     /// A referenced object, abstraction or external can't be found in the current context.
     ///
+    /// The first argument is the name of the object.
+    ///
     /// Optionally, you can return the path to the object definition.
-    fn cannot_find_obj(_: &'_ str, _: Option<&mut Box<dyn UserData>>) -> Option<String> {
+    fn cannot_find_obj(_: String, _: Option<&mut Box<dyn UserData>>) -> Option<String> {
         None
     }
 }
