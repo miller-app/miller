@@ -1,6 +1,6 @@
 //! This module contains [Context] and related types.
 
-use std::ffi::{c_void, CStr};
+use std::ffi::{c_void, CStr, CString};
 use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
@@ -130,7 +130,9 @@ impl<C: Callback> Context<C> {
             .to_string_lossy()
             .into();
         match C::cannot_find_obj(name, udata) {
-            Some(path) => path.into_bytes().as_mut_slice().as_mut_ptr() as *mut c_void,
+            Some(path) => CString::new(path.as_str())
+                .expect(&format!("Can't initialize CString from {}", path))
+                .into_raw() as *mut c_void,
             None => ptr::null::<c_void>() as *mut _,
         }
     }
@@ -144,15 +146,12 @@ impl<C: Callback> Drop for Context<C> {
     }
 }
 
-/// User data, which is passed to callbacks and can be referenced from the context.
-pub trait UserData: fmt::Debug {}
-
 /// Callback, which you can implement to handle events from [Context].
 ///
 /// All methods are optional.
 pub trait Callback: fmt::Debug {
     /// The user data type, which will be passed to the callbacks.
-    type UserData: UserData;
+    type UserData;
 
     /// Print standard message.
     fn print_std(_: String, _: Option<&mut Self::UserData>) {}
@@ -274,8 +273,6 @@ mod tests {
             type UserData = u32;
         }
 
-        impl UserData for u32 {}
-
         let _ = Context::<TestCallback>::new(Config::default(), None).unwrap();
     }
 
@@ -299,18 +296,14 @@ mod tests {
         #[derive(Debug)]
         struct TestUserData(String);
 
-        impl UserData for TestUserData {}
-
         let context =
             Context::<TestCallback>::new(Config::default(), Some(TestUserData(String::new())))
                 .unwrap();
         let user_data = Arc::into_raw(context.user_data.clone()) as *mut c_void;
+
         unsafe {
             let expected = "foo";
-            let msg = String::from(expected)
-                .into_bytes()
-                .as_mut_slice()
-                .as_mut_ptr() as *mut c_void;
+            let msg = CString::new(expected).unwrap().into_raw() as *mut c_void;
             let result = Context::<TestCallback>::raw_callback(
                 ZGCallbackFunction::ZG_PRINT_STD,
                 user_data,
@@ -327,10 +320,7 @@ mod tests {
             );
 
             let expected = "bar";
-            let msg = String::from(expected)
-                .into_bytes()
-                .as_mut_slice()
-                .as_mut_ptr() as *mut c_void;
+            let msg = CString::new(expected).unwrap().into_raw() as *mut c_void;
             let result = Context::<TestCallback>::raw_callback(
                 ZGCallbackFunction::ZG_PRINT_ERR,
                 user_data,
