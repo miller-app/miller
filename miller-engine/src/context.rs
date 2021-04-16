@@ -22,13 +22,13 @@ use zengarden_raw::{
 pub struct Context<C: Callback> {
     raw_context: AtomicPtr<PdContext>,
     config: Config,
-    user_data: Arc<RwLock<Option<Box<dyn UserData>>>>,
+    user_data: Arc<RwLock<Option<C::UserData>>>,
     _callback: PhantomData<C>,
 }
 
 impl<C: Callback> Context<C> {
     /// [Context] initializer.
-    pub fn new(config: Config, user_data: Option<Box<dyn UserData>>) -> Result<Self, Error> {
+    pub fn new(config: Config, user_data: Option<C::UserData>) -> Result<Self, Error> {
         let user_data = Arc::new(RwLock::new(user_data));
         Ok(Self {
             raw_context: Self::init_raw_context(
@@ -68,8 +68,8 @@ impl<C: Callback> Context<C> {
         udata: *mut c_void,
         ptr: *mut c_void,
     ) -> *mut c_void {
-        let ud: Arc<RwLock<Option<Box<dyn UserData>>>> =
-            Arc::from_raw(udata as *mut RwLock<Option<Box<dyn UserData>>>);
+        let ud: Arc<RwLock<Option<C::UserData>>> =
+            Arc::from_raw(udata as *mut RwLock<Option<C::UserData>>);
         let mut data = ud.write().unwrap();
         let udata = data.as_mut();
 
@@ -85,7 +85,7 @@ impl<C: Callback> Context<C> {
 
     unsafe fn print_callback(
         msg_t: ZGCallbackFunction,
-        udata: Option<&mut Box<dyn UserData>>,
+        udata: Option<&mut C::UserData>,
         str_ptr: *mut c_void,
     ) -> *mut c_void {
         let msg: String = CStr::from_ptr(str_ptr as *const c_char)
@@ -101,7 +101,7 @@ impl<C: Callback> Context<C> {
     }
 
     unsafe fn switch_dsp_callback(
-        udata: Option<&mut Box<dyn UserData>>,
+        udata: Option<&mut C::UserData>,
         ptr: *mut c_void,
     ) -> *mut c_void {
         let state = if ptr as i32 > 0 { true } else { false };
@@ -111,7 +111,7 @@ impl<C: Callback> Context<C> {
     }
 
     unsafe fn receiver_message_callback(
-        udata: Option<&mut Box<dyn UserData>>,
+        udata: Option<&mut C::UserData>,
         ptr: *mut c_void,
     ) -> *mut c_void {
         let raw_message = ptr as *mut ZGReceiverMessagePair;
@@ -123,7 +123,7 @@ impl<C: Callback> Context<C> {
     }
 
     unsafe fn obj_not_found_callback(
-        udata: Option<&mut Box<dyn UserData>>,
+        udata: Option<&mut C::UserData>,
         raw_name: *mut c_void,
     ) -> *mut c_void {
         let name: String = CStr::from_ptr(raw_name as *const c_char)
@@ -151,26 +151,29 @@ pub trait UserData: fmt::Debug {}
 ///
 /// All methods are optional.
 pub trait Callback: fmt::Debug {
+    /// The user data type, which will be passed to the callbacks.
+    type UserData: UserData;
+
     /// Print standard message.
-    fn print_std(_: String, _: Option<&mut Box<dyn UserData>>) {}
+    fn print_std(_: String, _: Option<&mut Self::UserData>) {}
 
     /// Print error message.
-    fn print_err(_: String, _: Option<&mut Box<dyn UserData>>) {}
+    fn print_err(_: String, _: Option<&mut Self::UserData>) {}
 
     /// Suggestion to turn on or off context signal processing. The message is called only when the
     /// context's process function is running.
-    fn switch_dsp(_: bool, _: Option<&mut Box<dyn UserData>>) {}
+    fn switch_dsp(_: bool, _: Option<&mut Self::UserData>) {}
 
     /// Called when a message for the registered with [Context::register_receiver] receiver is
     /// send.
-    fn receiver_message(_: ReceiverMessage, _: Option<&mut Box<dyn UserData>>) {}
+    fn receiver_message(_: ReceiverMessage, _: Option<&mut Self::UserData>) {}
 
     /// A referenced object, abstraction or external can't be found in the current context.
     ///
     /// The first argument is the name of the object.
     ///
     /// Optionally, you can return the path to the object definition.
-    fn cannot_find_obj(_: String, _: Option<&mut Box<dyn UserData>>) -> Option<String> {
+    fn cannot_find_obj(_: String, _: Option<&mut Self::UserData>) -> Option<String> {
         None
     }
 }
@@ -260,5 +263,87 @@ mod tests {
         assert_eq!(config.output_ch_num, 2);
         assert_eq!(config.sample_rate, 44100);
         assert_eq!(config.blocksize, 64);
+    }
+
+    #[test]
+    fn init_context() {
+        #[derive(Debug)]
+        struct TestCallback;
+
+        impl Callback for TestCallback {
+            type UserData = u32;
+        }
+
+        impl UserData for u32 {}
+
+        let _ = Context::<TestCallback>::new(Config::default(), None).unwrap();
+    }
+
+    #[test]
+    fn print_callback() {
+        #[derive(Debug)]
+        struct TestCallback;
+
+        impl Callback for TestCallback {
+            type UserData = TestUserData;
+
+            fn print_std(message: String, data: Option<&mut Self::UserData>) {
+                data.unwrap().0 = message;
+            }
+
+            fn print_err(message: String, data: Option<&mut Self::UserData>) {
+                TestCallback::print_std(message, data);
+            }
+        }
+
+        #[derive(Debug)]
+        struct TestUserData(String);
+
+        impl UserData for TestUserData {}
+
+        let context =
+            Context::<TestCallback>::new(Config::default(), Some(TestUserData(String::new())))
+                .unwrap();
+        let user_data = Arc::into_raw(context.user_data.clone()) as *mut c_void;
+        unsafe {
+            let expected = "foo";
+            let msg = String::from(expected)
+                .into_bytes()
+                .as_mut_slice()
+                .as_mut_ptr() as *mut c_void;
+            let result = Context::<TestCallback>::raw_callback(
+                ZGCallbackFunction::ZG_PRINT_STD,
+                user_data,
+                msg,
+            );
+
+            assert!(result.is_null());
+            assert_eq!(
+                expected,
+                (*context.user_data.clone().read().unwrap())
+                    .as_ref()
+                    .unwrap()
+                    .0
+            );
+
+            let expected = "bar";
+            let msg = String::from(expected)
+                .into_bytes()
+                .as_mut_slice()
+                .as_mut_ptr() as *mut c_void;
+            let result = Context::<TestCallback>::raw_callback(
+                ZGCallbackFunction::ZG_PRINT_ERR,
+                user_data,
+                msg,
+            );
+            assert!(result.is_null());
+            assert_eq!(
+                expected,
+                (*context.user_data.clone().read().unwrap())
+                    .as_ref()
+                    .unwrap()
+                    .0
+            );
+        }
     }
 }
