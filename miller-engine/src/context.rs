@@ -12,8 +12,8 @@ use thiserror::Error;
 
 #[allow(unused_imports)]
 use zengarden_raw::{
-    zg_context_delete, zg_context_get_userinfo, zg_context_new, PdContext, ZGCallbackFunction,
-    ZGMessage, ZGReceiverMessagePair,
+    zg_context_delete, zg_context_get_userinfo, zg_context_new, zg_context_process, PdContext,
+    ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
 };
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
@@ -24,6 +24,7 @@ use zengarden_raw::{
 pub struct Context<C: Callback> {
     raw_context: Arc<RwLock<*mut PdContext>>,
     config: Config,
+    audio_loop: AudioLoop,
     _callback: PhantomData<C>,
 }
 
@@ -37,6 +38,7 @@ impl<C: Callback> Context<C> {
                 &config,
                 Box::into_raw(Box::new(user_data)) as *mut c_void,
             )?,
+            audio_loop: AudioLoop::new(config.blocksize, config.input_ch_num, config.output_ch_num),
             config,
             _callback: Default::default(),
         })
@@ -144,6 +146,13 @@ impl<C: Callback> Context<C> {
             (raw as *mut C::UserData).as_mut().unwrap()
         }
     }
+
+    /// Get next frame of interleaved audio samples.
+    pub fn next_frame(&mut self) -> &[f32] {
+        let raw_clone = self.raw_context.clone();
+        let raw_context = raw_clone.read().unwrap();
+        self.audio_loop.next_frame(*raw_context)
+    }
 }
 
 impl<C: Callback> Drop for Context<C> {
@@ -246,6 +255,57 @@ impl Config {
     pub fn with_sample_rate(mut self, sr: usize) -> Self {
         self.sample_rate = sr;
         self
+    }
+}
+
+#[derive(Debug)]
+struct AudioLoop {
+    offset: usize,
+    blocksize: usize,
+    in_buf: Vec<f32>,
+    out_buf: Vec<f32>,
+    out_frame: Vec<f32>,
+}
+
+impl AudioLoop {
+    fn new(blocksize: usize, in_ch_num: usize, out_ch_num: usize) -> Self {
+        Self {
+            offset: 0,
+            blocksize,
+            in_buf: vec![0.0; blocksize * in_ch_num],
+            out_buf: vec![0.0; blocksize * out_ch_num],
+            out_frame: vec![0.0; out_ch_num],
+        }
+    }
+
+    fn next_frame(&mut self, raw_context: *mut PdContext) -> &[f32] {
+        if self.offset == self.blocksize {
+            self.fill_buffers(raw_context);
+            self.offset = 0;
+        }
+
+        self.fill_frame();
+
+        self.offset += 1;
+
+        &self.out_frame
+    }
+
+    fn fill_buffers(&mut self, raw_context: *mut PdContext) {
+        unsafe {
+            zg_context_process(
+                raw_context,
+                self.in_buf.as_mut_ptr(),
+                self.out_buf.as_mut_ptr(),
+            );
+        }
+    }
+
+    fn fill_frame(&mut self) {
+        for n in 0..self.out_frame.len() {
+            let buffer_pos = n * self.blocksize + self.offset;
+            self.out_frame[n] = self.out_buf[buffer_pos];
+        }
     }
 }
 
