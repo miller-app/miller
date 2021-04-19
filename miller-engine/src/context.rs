@@ -12,7 +12,7 @@ use thiserror::Error;
 
 use zengarden_raw::{
     zg_context_delete, zg_context_get_userinfo, zg_context_new, PdContext, ZGCallbackFunction,
-    ZGReceiverMessagePair,
+    ZGReceiverMessagePair, ZGMessage
 };
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
@@ -301,6 +301,7 @@ mod tests {
             test_print_std(&context, data_raw);
             test_print_err(&context, data_raw);
             test_switch_dsp(&context, data_raw);
+            test_receiver_msg(&context, data_raw);
         }
     }
 
@@ -332,6 +333,26 @@ mod tests {
         assert_eq!(expected, context.user_data().0);
     }
 
+    unsafe fn test_receiver_msg(context: &'_ Context<TestCallback>, data: *mut c_void) {
+        let expected = String::from("receiver_name");
+        let name = CString::new(expected.as_str()).unwrap().into_raw();
+        let msg = Box::into_raw(Box::new(ZGReceiverMessagePair {
+            receiverName: name,
+            message: ptr::null::<ZGMessage>() as *mut ZGMessage, //TODO
+        })) as *mut c_void;
+        let result = Context::<TestCallback>::raw_callback(
+            ZGCallbackFunction::ZG_RECEIVER_MESSAGE,
+            data,
+            msg,
+        );
+        assert!(result.is_null());
+        assert_eq!(expected, context.user_data().0);
+
+        // make the memory be managed back by rust
+        let _ = CString::from_raw(name);
+        let _ = Box::from_raw(msg as *mut ZGReceiverMessagePair);
+    }
+
     #[derive(Debug)]
     struct TestCallback;
 
@@ -350,6 +371,10 @@ mod tests {
             if state {
                 data.0 = String::from("true");
             }
+        }
+
+        fn receiver_message(msg: ReceiverMessage, data: &mut Self::UserData) {
+            data.0 = msg.receiver_name.clone();
         }
     }
 
