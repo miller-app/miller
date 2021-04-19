@@ -10,9 +10,10 @@ use std::sync::{Arc, RwLock};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+#[allow(unused_imports)]
 use zengarden_raw::{
     zg_context_delete, zg_context_get_userinfo, zg_context_new, PdContext, ZGCallbackFunction,
-    ZGReceiverMessagePair, ZGMessage
+    ZGMessage, ZGReceiverMessagePair,
 };
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
@@ -302,6 +303,7 @@ mod tests {
             test_print_err(&context, data_raw);
             test_switch_dsp(&context, data_raw);
             test_receiver_msg(&context, data_raw);
+            test_obj_not_found(&context, data_raw);
         }
     }
 
@@ -353,6 +355,21 @@ mod tests {
         let _ = Box::from_raw(msg as *mut ZGReceiverMessagePair);
     }
 
+    unsafe fn test_obj_not_found(context: &'_ Context<TestCallback>, data: *mut c_void) {
+        let expected = String::from("object_name");
+        let name = CString::new(expected.as_str()).unwrap().into_raw() as *mut c_void;
+        let result = Context::<TestCallback>::raw_callback(
+            ZGCallbackFunction::ZG_CANNOT_FIND_OBJECT,
+            data,
+            name,
+        );
+
+        let result_str = CString::from_raw(result as *mut c_char);
+
+        assert_eq!(result_str.to_string_lossy(), expected.clone());
+        assert_eq!(expected, context.user_data().0);
+    }
+
     #[derive(Debug)]
     struct TestCallback;
 
@@ -375,6 +392,11 @@ mod tests {
 
         fn receiver_message(msg: ReceiverMessage, data: &mut Self::UserData) {
             data.0 = msg.receiver_name.clone();
+        }
+
+        fn cannot_find_obj(name: String, data: &mut Self::UserData) -> Option<String> {
+            data.0 = name;
+            Some(data.0.clone())
         }
     }
 
