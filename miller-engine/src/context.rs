@@ -148,10 +148,10 @@ impl<C: Callback> Context<C> {
     }
 
     /// Get next frame of interleaved audio samples.
-    pub fn next_frame(&mut self) -> &[f32] {
+    pub fn next_frame(&mut self, in_frame: &[f32]) -> &[f32] {
         let raw_clone = self.raw_context.clone();
         let raw_context = raw_clone.read().unwrap();
-        self.audio_loop.next_frame(*raw_context)
+        self.audio_loop.next_frame(*raw_context, in_frame)
     }
 }
 
@@ -260,7 +260,7 @@ impl Config {
 
 #[derive(Debug)]
 struct AudioLoop {
-    offset: usize,
+    frame_offset: usize,
     blocksize: usize,
     in_buf: Vec<f32>,
     out_buf: Vec<f32>,
@@ -270,7 +270,7 @@ struct AudioLoop {
 impl AudioLoop {
     fn new(blocksize: usize, in_ch_num: usize, out_ch_num: usize) -> Self {
         Self {
-            offset: 0,
+            frame_offset: 0,
             blocksize,
             in_buf: vec![0.0; blocksize * in_ch_num],
             out_buf: vec![0.0; blocksize * out_ch_num],
@@ -278,20 +278,21 @@ impl AudioLoop {
         }
     }
 
-    fn next_frame(&mut self, raw_context: *mut PdContext) -> &[f32] {
-        if self.offset == self.blocksize {
-            self.fill_buffers(raw_context);
-            self.offset = 0;
+    fn next_frame(&mut self, raw_context: *mut PdContext, in_frame: &[f32]) -> &[f32] {
+        if self.frame_offset == self.blocksize {
+            self.process_buffers(raw_context);
+            self.frame_offset = 0;
         }
 
-        self.fill_frame();
+        self.update_input(in_frame);
+        self.update_output();
 
-        self.offset += 1;
+        self.frame_offset += 1;
 
         &self.out_frame
     }
 
-    fn fill_buffers(&mut self, raw_context: *mut PdContext) {
+    fn process_buffers(&mut self, raw_context: *mut PdContext) {
         unsafe {
             zg_context_process(
                 raw_context,
@@ -301,9 +302,16 @@ impl AudioLoop {
         }
     }
 
-    fn fill_frame(&mut self) {
+    fn update_input(&mut self, in_frame: &[f32]) {
+        for n in 0..self.in_buf.len() {
+            let pos = n * self.blocksize + self.frame_offset;
+            self.in_buf[pos] = in_frame[n];
+        }
+    }
+
+    fn update_output(&mut self) {
         for n in 0..self.out_frame.len() {
-            let buffer_pos = n * self.blocksize + self.offset;
+            let buffer_pos = n * self.blocksize + self.frame_offset;
             self.out_frame[n] = self.out_buf[buffer_pos];
         }
     }
