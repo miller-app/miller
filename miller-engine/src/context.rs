@@ -1,5 +1,7 @@
 //! This module contains [Context] and related types.
 
+mod audioloop;
+
 use std::ffi::{c_void, CStr, CString};
 use std::fmt;
 use std::marker::PhantomData;
@@ -9,12 +11,13 @@ use std::sync::{Arc, RwLock};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
 #[allow(unused_imports)]
 use zengarden_raw::{
     zg_context_delete, zg_context_get_userinfo, zg_context_new, zg_context_process, PdContext,
     ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
 };
+
+use audioloop::{AudioLoopF, AudioLoop, Error as AudioLoopError};
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
 /// configuration (i.e. sample rate, block size, etc.) and audio loop. Contexts aren't supposed to
@@ -24,7 +27,7 @@ use zengarden_raw::{
 pub struct Context<C: Callback> {
     raw_context: Arc<RwLock<*mut PdContext>>,
     config: Config,
-    audio_loop: AudioLoop,
+    audio_loop_f: AudioLoopF,
     _callback: PhantomData<C>,
 }
 
@@ -38,7 +41,11 @@ impl<C: Callback> Context<C> {
                 &config,
                 Box::into_raw(Box::new(user_data)) as *mut c_void,
             )?,
-            audio_loop: AudioLoop::new(config.blocksize, config.input_ch_num, config.output_ch_num),
+            audio_loop_f: AudioLoopF::new(
+                config.blocksize,
+                config.input_ch_num,
+                config.output_ch_num,
+            ),
             config,
             _callback: Default::default(),
         })
@@ -147,11 +154,14 @@ impl<C: Callback> Context<C> {
         }
     }
 
-    /// Get next frame of interleaved audio samples.
-    pub fn next_frame(&mut self, in_frame: &[f32]) -> &[f32] {
+    /// Get next frame of interleaved audio 32-bit floating point samples.
+    ///
+    /// The `in_frame` argument is an input stream frame of interleaved 32-bit floating point
+    /// samples. It should be equal in size to the number of input channels.
+    pub fn next_frame(&mut self, in_frame: &[f32]) -> Result<&[f32], AudioLoopError> {
         let raw_clone = self.raw_context.clone();
         let raw_context = raw_clone.read().unwrap();
-        self.audio_loop.next_frame(*raw_context, in_frame)
+        self.audio_loop_f.next_frame(*raw_context, in_frame)
     }
 }
 
@@ -255,65 +265,6 @@ impl Config {
     pub fn with_sample_rate(mut self, sr: usize) -> Self {
         self.sample_rate = sr;
         self
-    }
-}
-
-#[derive(Debug)]
-struct AudioLoop {
-    frame_offset: usize,
-    blocksize: usize,
-    in_buf: Vec<f32>,
-    out_buf: Vec<f32>,
-    out_frame: Vec<f32>,
-}
-
-impl AudioLoop {
-    fn new(blocksize: usize, in_ch_num: usize, out_ch_num: usize) -> Self {
-        Self {
-            frame_offset: 0,
-            blocksize,
-            in_buf: vec![0.0; blocksize * in_ch_num],
-            out_buf: vec![0.0; blocksize * out_ch_num],
-            out_frame: vec![0.0; out_ch_num],
-        }
-    }
-
-    fn next_frame(&mut self, raw_context: *mut PdContext, in_frame: &[f32]) -> &[f32] {
-        if self.frame_offset == self.blocksize {
-            self.process_buffers(raw_context);
-            self.frame_offset = 0;
-        }
-
-        self.update_input(in_frame);
-        self.update_output();
-
-        self.frame_offset += 1;
-
-        &self.out_frame
-    }
-
-    fn process_buffers(&mut self, raw_context: *mut PdContext) {
-        unsafe {
-            zg_context_process(
-                raw_context,
-                self.in_buf.as_mut_ptr(),
-                self.out_buf.as_mut_ptr(),
-            );
-        }
-    }
-
-    fn update_input(&mut self, in_frame: &[f32]) {
-        for n in 0..self.in_buf.len() {
-            let pos = n * self.blocksize + self.frame_offset;
-            self.in_buf[pos] = in_frame[n];
-        }
-    }
-
-    fn update_output(&mut self) {
-        for n in 0..self.out_frame.len() {
-            let buffer_pos = n * self.blocksize + self.frame_offset;
-            self.out_frame[n] = self.out_buf[buffer_pos];
-        }
     }
 }
 
