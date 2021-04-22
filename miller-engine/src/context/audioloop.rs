@@ -3,9 +3,15 @@ use std::fmt;
 use thiserror::Error;
 use zengarden_raw::{zg_context_process, zg_context_process_s, PdContext};
 
-pub(crate) trait AudioLoop: fmt::Debug {
+/// Audio loop.
+pub trait AudioLoop: fmt::Debug + Default {
+    /// Audio buffer sample type.
     type SampleType;
 
+    /// Initialize buffers. May behave as re-initializer.
+    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize);
+
+    /// Returns next frame of [`Self::SampleType`].
     fn next_frame(
         &mut self,
         raw_context: *mut PdContext,
@@ -14,26 +20,17 @@ pub(crate) trait AudioLoop: fmt::Debug {
 }
 
 /// [AudioLoop] implementation for 32-bit float sampled buffer.
-#[derive(Debug)]
-pub(crate) struct AudioLoopF {
+#[derive(Debug, Default)]
+pub struct AudioLoopF32 {
     frame_offset: usize,
+    in_ch_num: usize,
     blocksize: usize,
     in_buf: Vec<f32>,
     out_buf: Vec<f32>,
     out_frame: Vec<f32>,
 }
 
-impl AudioLoopF {
-    pub(crate) fn new(blocksize: usize, in_ch_num: usize, out_ch_num: usize) -> Self {
-        Self {
-            frame_offset: 0,
-            blocksize,
-            in_buf: vec![0.0; blocksize * in_ch_num],
-            out_buf: vec![0.0; blocksize * out_ch_num],
-            out_frame: vec![0.0; out_ch_num],
-        }
-    }
-
+impl AudioLoopF32 {
     fn process_buffers(&mut self, raw_context: *mut PdContext) {
         unsafe {
             zg_context_process(
@@ -59,14 +56,24 @@ impl AudioLoopF {
     }
 }
 
-impl AudioLoop for AudioLoopF {
+impl AudioLoop for AudioLoopF32 {
     type SampleType = f32;
+
+    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
+        self.in_buf = vec![0.0; blocksize * in_ch_num];
+        self.out_buf = vec![0.0; blocksize * out_ch_num];
+        self.out_frame = vec![0.0; out_ch_num];
+    }
 
     fn next_frame(
         &mut self,
         raw_context: *mut PdContext,
         in_frame: &[Self::SampleType],
     ) -> Result<&[Self::SampleType], Error> {
+        if in_frame.len() != self.in_ch_num {
+            return Err(Error::WrongInFrameSize);
+        }
+
         if self.frame_offset == self.blocksize {
             self.process_buffers(raw_context);
             self.frame_offset = 0;
@@ -81,18 +88,10 @@ impl AudioLoop for AudioLoopF {
     }
 }
 
-/// Sample type.
-#[derive(Debug, Clone, Copy)]
-pub(crate) enum Sample {
-    /// 32-bit float sample type.
-    Float32(f32),
-    /// 16-bit integer (short) type.
-    Int16(i16),
-}
-
 /// Audio loop error.
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Wrong input buffer size. The size should be equal to the number of input channels.")]
-    WrongInBufferSize,
+    /// The size of the input frame isn't equal to the number of the input channels.
+    #[error("Wrong input frame size. The size should be equal to the number of input channels.")]
+    WrongInFrameSize,
 }

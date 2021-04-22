@@ -17,38 +17,38 @@ use zengarden_raw::{
     ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
 };
 
-use audioloop::{AudioLoopF, AudioLoop, Error as AudioLoopError};
+pub use audioloop::{AudioLoop, AudioLoopF32, Error as AudioLoopError};
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
 /// configuration (i.e. sample rate, block size, etc.) and audio loop. Contexts aren't supposed to
 /// share data between each other, but there can be multiple graphs within a context, which may
 /// share data between themselves.
 #[derive(Debug)]
-pub struct Context<C: Callback> {
+pub struct Context<C: Callback, L: AudioLoop> {
     raw_context: Arc<RwLock<*mut PdContext>>,
     config: Config,
-    audio_loop_f: AudioLoopF,
+    audio_loop: L,
     _callback: PhantomData<C>,
 }
 
-impl<C: Callback> Context<C> {
+impl<C: Callback, L: AudioLoop> Context<C, L> {
     /// [Context] initializer.
     pub fn new(config: Config, user_data: C::UserData) -> Result<Self, Error> {
         // Thread-safity for the user data is implemented on the ZenGarden's side. But in case of
         // threading issues this should be the first place to look.
-        Ok(Self {
+        let mut result = Self {
             raw_context: Self::init_raw_context(
                 &config,
                 Box::into_raw(Box::new(user_data)) as *mut c_void,
             )?,
-            audio_loop_f: AudioLoopF::new(
-                config.blocksize,
-                config.input_ch_num,
-                config.output_ch_num,
-            ),
-            config,
+            audio_loop: Default::default(),
+            config: config.clone(),
             _callback: Default::default(),
-        })
+        };
+
+        result.init_buffers(config.blocksize, config.input_ch_num, config.output_ch_num);
+
+        Ok(result)
     }
 
     fn init_raw_context(
@@ -138,6 +138,11 @@ impl<C: Callback> Context<C> {
         }
     }
 
+    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
+        self.audio_loop
+            .init_buffers(blocksize, in_ch_num, out_ch_num);
+    }
+
     /// Borrow user data.
     pub fn user_data(&self) -> &'_ C::UserData {
         unsafe {
@@ -158,14 +163,17 @@ impl<C: Callback> Context<C> {
     ///
     /// The `in_frame` argument is an input stream frame of interleaved 32-bit floating point
     /// samples. It should be equal in size to the number of input channels.
-    pub fn next_frame(&mut self, in_frame: &[f32]) -> Result<&[f32], AudioLoopError> {
+    pub fn next_frame(
+        &mut self,
+        in_frame: &[L::SampleType],
+    ) -> Result<&[L::SampleType], AudioLoopError> {
         let raw_clone = self.raw_context.clone();
         let raw_context = raw_clone.read().unwrap();
-        self.audio_loop_f.next_frame(*raw_context, in_frame)
+        self.audio_loop.next_frame(*raw_context, in_frame)
     }
 }
 
-impl<C: Callback> Drop for Context<C> {
+impl<C: Callback, L: AudioLoop> Drop for Context<C, L> {
     fn drop(&mut self) {
         unsafe {
             zg_context_delete(*(self.raw_context.read().unwrap()));
@@ -301,7 +309,8 @@ mod tests {
         }
 
         let expected = 42;
-        let context = Context::<TestCallback>::new(Config::default(), expected).unwrap();
+        let context =
+            Context::<TestCallback, AudioLoopF32>::new(Config::default(), expected).unwrap();
         assert_eq!(expected, *context.user_data());
 
         let data = context.user_data_mut();
@@ -312,8 +321,11 @@ mod tests {
 
     #[test]
     fn callback() {
-        let context =
-            Context::<TestCallback>::new(Config::default(), TestUserData(String::new())).unwrap();
+        let context = Context::<TestCallback, AudioLoopF32>::new(
+            Config::default(),
+            TestUserData(String::new()),
+        )
+        .unwrap();
         let data_ptr: *mut TestUserData = context.user_data_mut();
         let data_raw = data_ptr as *mut c_void;
 
@@ -326,42 +338,54 @@ mod tests {
         }
     }
 
-    unsafe fn test_print_std(context: &'_ Context<TestCallback>, data: *mut c_void) {
+    unsafe fn test_print_std(context: &'_ Context<TestCallback, AudioLoopF32>, data: *mut c_void) {
         let expected = "foo";
         let msg = CString::new(expected).unwrap().into_raw() as *mut c_void;
-        let result =
-            Context::<TestCallback>::raw_callback(ZGCallbackFunction::ZG_PRINT_STD, data, msg);
+        let result = Context::<TestCallback, AudioLoopF32>::raw_callback(
+            ZGCallbackFunction::ZG_PRINT_STD,
+            data,
+            msg,
+        );
 
         assert!(result.is_null());
         assert_eq!(expected, context.user_data().0);
     }
 
-    unsafe fn test_print_err(context: &'_ Context<TestCallback>, data: *mut c_void) {
+    unsafe fn test_print_err(context: &'_ Context<TestCallback, AudioLoopF32>, data: *mut c_void) {
         let expected = "bar";
         let msg = CString::new(expected).unwrap().into_raw() as *mut c_void;
-        let result =
-            Context::<TestCallback>::raw_callback(ZGCallbackFunction::ZG_PRINT_ERR, data, msg);
+        let result = Context::<TestCallback, AudioLoopF32>::raw_callback(
+            ZGCallbackFunction::ZG_PRINT_ERR,
+            data,
+            msg,
+        );
         assert!(result.is_null());
         assert_eq!(expected, context.user_data().0);
     }
 
-    unsafe fn test_switch_dsp(context: &'_ Context<TestCallback>, data: *mut c_void) {
+    unsafe fn test_switch_dsp(context: &'_ Context<TestCallback, AudioLoopF32>, data: *mut c_void) {
         let expected = "true";
         let msg = true as i32 as *mut c_void;
-        let result =
-            Context::<TestCallback>::raw_callback(ZGCallbackFunction::ZG_PD_DSP, data, msg);
+        let result = Context::<TestCallback, AudioLoopF32>::raw_callback(
+            ZGCallbackFunction::ZG_PD_DSP,
+            data,
+            msg,
+        );
         assert!(result.is_null());
         assert_eq!(expected, context.user_data().0);
     }
 
-    unsafe fn test_receiver_msg(context: &'_ Context<TestCallback>, data: *mut c_void) {
+    unsafe fn test_receiver_msg(
+        context: &'_ Context<TestCallback, AudioLoopF32>,
+        data: *mut c_void,
+    ) {
         let expected = String::from("receiver_name");
         let name = CString::new(expected.as_str()).unwrap().into_raw();
         let msg = Box::into_raw(Box::new(ZGReceiverMessagePair {
             receiverName: name,
             message: ptr::null::<ZGMessage>() as *mut ZGMessage, //TODO
         })) as *mut c_void;
-        let result = Context::<TestCallback>::raw_callback(
+        let result = Context::<TestCallback, AudioLoopF32>::raw_callback(
             ZGCallbackFunction::ZG_RECEIVER_MESSAGE,
             data,
             msg,
@@ -374,10 +398,13 @@ mod tests {
         let _ = Box::from_raw(msg as *mut ZGReceiverMessagePair);
     }
 
-    unsafe fn test_obj_not_found(context: &'_ Context<TestCallback>, data: *mut c_void) {
+    unsafe fn test_obj_not_found(
+        context: &'_ Context<TestCallback, AudioLoopF32>,
+        data: *mut c_void,
+    ) {
         let expected = String::from("object_name");
         let name = CString::new(expected.as_str()).unwrap().into_raw() as *mut c_void;
-        let result = Context::<TestCallback>::raw_callback(
+        let result = Context::<TestCallback, AudioLoopF32>::raw_callback(
             ZGCallbackFunction::ZG_CANNOT_FIND_OBJECT,
             data,
             name,
