@@ -88,6 +88,70 @@ impl AudioLoop for AudioLoopF32 {
     }
 }
 
+/// [AudioLoop] implementation for 16-bit integer sampled buffer.
+#[derive(Debug, Default)]
+pub struct AudioLoopI16 {
+    frame_offset: usize,
+    in_ch_num: usize,
+    blocksize: usize,
+    in_buf: Vec<i16>,
+    out_buf: Vec<i16>,
+    out_frame: Vec<i16>,
+}
+
+impl AudioLoopI16 {
+    fn process_buffers(&mut self, raw_context: *mut PdContext) {
+        unsafe {
+            zg_context_process_s(
+                raw_context,
+                self.in_buf.as_mut_ptr(),
+                self.out_buf.as_mut_ptr(),
+            );
+        }
+    }
+
+    fn update_input(&mut self, in_frame: &[i16]) {
+        self.in_buf[self.frame_offset..].copy_from_slice(in_frame);
+    }
+
+    fn update_output(&mut self) {
+        let end = self.out_frame.len();
+        self.out_frame.copy_from_slice(&self.out_buf[self.frame_offset..end]);
+    }
+}
+
+impl AudioLoop for AudioLoopI16 {
+    type SampleType = i16;
+
+    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
+        self.in_buf = vec![0; blocksize * in_ch_num];
+        self.out_buf = vec![0; blocksize * out_ch_num];
+        self.out_frame = vec![0; out_ch_num];
+    }
+
+    fn next_frame(
+        &mut self,
+        raw_context: *mut PdContext,
+        in_frame: &[Self::SampleType],
+    ) -> Result<&[Self::SampleType], Error> {
+        if in_frame.len() != self.in_ch_num {
+            return Err(Error::WrongInFrameSize);
+        }
+
+        if self.frame_offset == self.blocksize {
+            self.process_buffers(raw_context);
+            self.frame_offset = 0;
+        }
+
+        self.update_input(in_frame);
+        self.update_output();
+
+        self.frame_offset += 1;
+
+        Ok(&self.out_frame)
+    }
+}
+
 /// Audio loop error.
 #[derive(Debug, Error)]
 pub enum Error {

@@ -17,7 +17,7 @@ use zengarden_raw::{
     ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
 };
 
-pub use audioloop::{AudioLoop, AudioLoopF32, Error as AudioLoopError};
+pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopError};
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
 /// configuration (i.e. sample rate, block size, etc.) and audio loop. Contexts aren't supposed to
