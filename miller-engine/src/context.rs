@@ -138,7 +138,7 @@ impl<C: Callback, L: AudioLoop> Context<C, L> {
         }
     }
 
-    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
+    fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
         self.audio_loop
             .init_buffers(blocksize, in_ch_num, out_ch_num);
     }
@@ -230,13 +230,13 @@ impl ReceiverMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
     /// The number of input channels.
-    pub input_ch_num: usize,
+    pub input_ch_num: u16,
     /// The number of output channels.
-    pub output_ch_num: usize,
+    pub output_ch_num: u16,
     /// The computation block size.
-    pub blocksize: usize,
+    pub blocksize: u16,
     /// The sample rate.
-    pub sample_rate: usize,
+    pub sample_rate: u32,
 }
 
 impl Default for Config {
@@ -252,29 +252,32 @@ impl Default for Config {
 
 impl Config {
     /// Set input channels number.
-    pub fn with_in_ch_num(mut self, ch_num: usize) -> Self {
+    pub fn with_in_ch_num(mut self, ch_num: u16) -> Self {
         self.input_ch_num = ch_num;
         self
     }
 
     /// Set output channels number.
-    pub fn with_out_ch_num(mut self, ch_num: usize) -> Self {
+    pub fn with_out_ch_num(mut self, ch_num: u16) -> Self {
         self.output_ch_num = ch_num;
         self
     }
 
     /// Set computation block size.
-    pub fn with_block_size(mut self, blocksize: usize) -> Self {
+    pub fn with_block_size(mut self, blocksize: u16) -> Self {
         self.blocksize = blocksize;
         self
     }
 
     /// Set sample rate.
-    pub fn with_sample_rate(mut self, sr: usize) -> Self {
+    pub fn with_sample_rate(mut self, sr: u32) -> Self {
         self.sample_rate = sr;
         self
     }
 }
+
+unsafe impl<C: Callback, L: AudioLoop> Send for Context<C, L> {}
+unsafe impl<C: Callback, L: AudioLoop> Sync for Context<C, L> {}
 
 /// [Context] errors.
 #[derive(Debug, Error)]

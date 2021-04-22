@@ -9,7 +9,7 @@ pub trait AudioLoop: fmt::Debug + Default {
     type SampleType;
 
     /// Initialize buffers. May behave as re-initializer.
-    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize);
+    fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16);
 
     /// Returns next frame of [`Self::SampleType`].
     fn next_frame(
@@ -42,7 +42,7 @@ impl AudioLoopF32 {
     }
 
     fn update_input(&mut self, in_frame: &[f32]) {
-        for n in 0..self.in_buf.len() {
+        for n in 0..in_frame.len() {
             let pos = n * self.blocksize + self.frame_offset;
             self.in_buf[pos] = in_frame[n];
         }
@@ -59,10 +59,12 @@ impl AudioLoopF32 {
 impl AudioLoop for AudioLoopF32 {
     type SampleType = f32;
 
-    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
-        self.in_buf = vec![0.0; blocksize * in_ch_num];
-        self.out_buf = vec![0.0; blocksize * out_ch_num];
-        self.out_frame = vec![0.0; out_ch_num];
+    fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
+        self.in_ch_num = in_ch_num as usize;
+        self.blocksize = blocksize as usize;
+        self.in_buf = vec![0.0; (blocksize * in_ch_num) as usize];
+        self.out_buf = vec![0.0; (blocksize * out_ch_num) as usize];
+        self.out_frame = vec![0.0; out_ch_num as usize];
     }
 
     fn next_frame(
@@ -123,10 +125,12 @@ impl AudioLoopI16 {
 impl AudioLoop for AudioLoopI16 {
     type SampleType = i16;
 
-    fn init_buffers(&mut self, blocksize: usize, in_ch_num: usize, out_ch_num: usize) {
-        self.in_buf = vec![0; blocksize * in_ch_num];
-        self.out_buf = vec![0; blocksize * out_ch_num];
-        self.out_frame = vec![0; out_ch_num];
+    fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
+        self.in_ch_num = in_ch_num as usize;
+        self.blocksize = blocksize as usize;
+        self.in_buf = vec![0; (blocksize * in_ch_num) as usize];
+        self.out_buf = vec![0; (blocksize * out_ch_num) as usize];
+        self.out_frame = vec![0; out_ch_num as usize];
     }
 
     fn next_frame(
