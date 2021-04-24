@@ -347,7 +347,7 @@ mod tests {
 
         // there's a one block delay, so we compare slices of a single block only
         let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
-        // assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
+        assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
     #[test]
@@ -372,11 +372,9 @@ mod tests {
             .flatten()
             .collect();
 
-        // dbg!(result);
-
         // there's a one block delay, so we compare slices of a single block only
         let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
-        // assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
+        assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
     fn init_test_context_next_frame<L: AudioLoop>() -> Context<DummyDispatcher, L> {

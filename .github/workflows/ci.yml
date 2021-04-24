@@ -32,7 +32,7 @@ jobs:
         run: cargo build
 
       - name: Test
-        run: cargo test
+        run: cargo test --all
 
   macos:
     runs-on: macos-latest
@@ -56,7 +56,7 @@ jobs:
         run: cargo build
 
       - name: Test
-        run: cargo test
+        run: cargo test --all
 
   windows:
 
@@ -115,5 +115,5 @@ jobs:
           $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
-          cargo test --target x86_64-pc-windows-gnu
+          cargo test --all --target x86_64-pc-windows-gnu
 

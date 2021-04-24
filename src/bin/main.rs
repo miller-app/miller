@@ -3,7 +3,7 @@ use cpal::{
     StreamConfig,
 };
 
-use miller_engine::context::{AudioLoopF32, Callback, Config as ContextConfig, Context};
+use miller_engine::context::{AudioLoopF32, Dispatcher, Config as ContextConfig, Context};
 
 fn main() {
     let host = cpal::default_host();
@@ -25,7 +25,7 @@ fn main() {
         .with_in_ch_num(config.channels)
         .with_out_ch_num(config.channels);
 
-    let mut context = Context::<ContextCallback, AudioLoopF32>::new(context_config, 0).unwrap();
+    let mut context = Context::<ContextDispatcher, AudioLoopF32>::new(context_config, 0).unwrap();
 
     // unsafe {
         // let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
@@ -63,8 +63,8 @@ fn main() {
 }
 
 #[derive(Debug)]
-struct ContextCallback;
+struct ContextDispatcher;
 
-impl Callback for ContextCallback {
+impl Dispatcher for ContextDispatcher {
     type UserData = i32;
 }
