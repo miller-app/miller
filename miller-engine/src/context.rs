@@ -290,6 +290,10 @@ pub enum Error {
 #[cfg(test)]
 mod tests {
 
+    use std::fs;
+
+    use zengarden_raw::{zg_context_new_graph_from_file, zg_graph_attach};
+
     use super::*;
 
     #[test]
@@ -304,22 +308,57 @@ mod tests {
 
     #[test]
     fn context_user_data() {
-        #[derive(Debug)]
-        struct TestCallback;
-
-        impl Callback for TestCallback {
-            type UserData = u32;
-        }
-
         let expected = 42;
         let context =
-            Context::<TestCallback, AudioLoopF32>::new(Config::default(), expected).unwrap();
+            Context::<DummyCallback, AudioLoopF32>::new(Config::default(), expected).unwrap();
         assert_eq!(expected, *context.user_data());
 
         let data = context.user_data_mut();
         *data = 27;
 
         assert_eq!(27, *context.user_data());
+    }
+
+    #[test]
+    fn context_next_frame() {
+        let mut context =
+            Context::<DummyCallback, AudioLoopF32>::new(Config::default(), 0).unwrap();
+        let patch_dir_path = fs::canonicalize("./test/").unwrap();
+        let patch_dir_str = patch_dir_path.to_str().unwrap();
+
+        unsafe {
+            let dir = CString::new(patch_dir_str).unwrap();
+            let filename = CString::new("/loop_with_input.pd").unwrap();
+            let graph = zg_context_new_graph_from_file(
+                *(context.raw_context.clone().read().unwrap()),
+                dir.as_ptr(),
+                filename.as_ptr(),
+            );
+            zg_graph_attach(graph);
+        }
+
+        let input = 0..context.config.blocksize * context.config.input_ch_num * 2;
+
+        let expected: Vec<f32> = input
+            .clone()
+            .enumerate()
+            .map(|(n, val)| {
+                let mul = [0.25_f32, 0.5][n % context.config.input_ch_num as usize];
+                val as f32 * mul
+            })
+            .collect();
+
+        let result: Vec<f32> = input
+            .map(|n| n as f32)
+            .collect::<Vec<f32>>()
+            .chunks(context.config.input_ch_num as usize)
+            .map(|val| context.next_frame(val).unwrap().to_owned())
+            .flatten()
+            .collect();
+
+        // there's a one block delay
+        let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
+        assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
     #[test]
@@ -451,4 +490,11 @@ mod tests {
 
     #[derive(Debug)]
     struct TestUserData(String);
+
+    #[derive(Debug)]
+    struct DummyCallback;
+
+    impl Callback for DummyCallback {
+        type UserData = u32;
+    }
 }
