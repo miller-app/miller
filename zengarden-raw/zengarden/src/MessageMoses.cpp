@@ -23,33 +23,34 @@
 #include "MessageMoses.h"
 
 MessageObject *MessageMoses::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageMoses(initMessage, graph);
+    return new MessageMoses(initMessage, graph);
 }
 
-MessageMoses::MessageMoses(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 2, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageMoses::MessageMoses(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 2, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageMoses::~MessageMoses() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageMoses::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (message->isFloat(0)) {
-        sendMessage((message->getFloat(0) < constant) ? 0 : 1, message);
-      }
-      break;
+        if (message->isFloat(0)) {
+            sendMessage((message->getFloat(0) < constant) ? 0 : 1, message);
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

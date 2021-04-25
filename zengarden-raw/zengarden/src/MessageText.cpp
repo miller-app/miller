@@ -23,13 +23,14 @@
 #include "MessageText.h"
 
 MessageObject *MessageText::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageText(initMessage, graph);
+    return new MessageText(initMessage, graph);
 }
 
-MessageText::MessageText(PdMessage *initMessage, PdGraph *graph) : MessageObject(0, 0, graph) {
-  comment = initMessage->isSymbol(0) ? StaticUtils::copyString(initMessage->getSymbol(0)) : NULL;
+MessageText::MessageText(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(0, 0, graph) {
+    comment = initMessage->isSymbol(0)
+                  ? StaticUtils::copyString(initMessage->getSymbol(0))
+                  : NULL;
 }
 
-MessageText::~MessageText() {
-  free(comment);
-}
+MessageText::~MessageText() { free(comment); }

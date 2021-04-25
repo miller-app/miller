@@ -40,12 +40,10 @@ class MessageSine : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageSine::getObjectLabel() {
-  return "sin";
-}
+inline const char *MessageSine::getObjectLabel() { return "sin"; }
 
 inline std::string MessageSine::toString() {
-  return MessageSine::getObjectLabel();
+    return MessageSine::getObjectLabel();
 }
 
 #endif // _MESSAGE_SINE_H_

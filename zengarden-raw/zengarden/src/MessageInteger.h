@@ -43,12 +43,10 @@ class MessageInteger : public MessageObject {
     float constant;
 };
 
-inline const char *MessageInteger::getObjectLabel() {
-  return "int";
-};
+inline const char *MessageInteger::getObjectLabel() { return "int"; };
 
 inline std::string MessageInteger::toString() {
-  return MessageInteger::getObjectLabel();
+    return MessageInteger::getObjectLabel();
 }
 
 #endif // _MESSAGE_INTEGER_H_

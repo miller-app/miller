@@ -44,8 +44,6 @@ class MessageRemainder : public MessageObject {
     int constant;
 };
 
-inline const char *MessageRemainder::getObjectLabel() {
-  return "%";
-}
+inline const char *MessageRemainder::getObjectLabel() { return "%"; }
 
 #endif // _MESSAGE_REMAINDER_H_

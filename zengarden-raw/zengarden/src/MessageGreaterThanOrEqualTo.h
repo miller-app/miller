@@ -45,7 +45,7 @@ class MessageGreaterThanOrEqualTo : public MessageObject {
 };
 
 inline const char *MessageGreaterThanOrEqualTo::getObjectLabel() {
-  return ">=";
+    return ">=";
 }
 
 #endif // _MESSAGE_GREATERTHANOREQUALTO_H_

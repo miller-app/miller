@@ -23,40 +23,48 @@
 #include "MessageDiv.h"
 
 MessageObject *MessageDiv::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageDiv(initMessage, graph);
+    return new MessageDiv(initMessage, graph);
 }
 
-MessageDiv::MessageDiv(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 1.0f;
-  if (constant == 0.0f) constant = 1.0f;
-  else if (constant < 0.0f) constant = -constant;
+MessageDiv::MessageDiv(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 1.0f;
+    if (constant == 0.0f)
+        constant = 1.0f;
+    else if (constant < 0.0f)
+        constant = -constant;
 }
 
 MessageDiv::~MessageDiv() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageDiv::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (message->isFloat(0)) {
-        float f = message->getFloat(0);
-        if (f < 0.0f) f -= (constant-1.0f);
-        float result = truncf(f/constant);
-        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), result);
-        sendMessage(0, outgoingMessage);
-      }
-      break;
+        if (message->isFloat(0)) {
+            float f = message->getFloat(0);
+            if (f < 0.0f)
+                f -= (constant - 1.0f);
+            float result = truncf(f / constant);
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       result);
+            sendMessage(0, outgoingMessage);
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-        if (constant == 0.0f) constant = 1.0f;
-        else if (constant < 0.0f) constant = -constant;
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+            if (constant == 0.0f)
+                constant = 1.0f;
+            else if (constant < 0.0f)
+                constant = -constant;
+        }
+        break;
     }
-    default: break;
-  }
+    default:
+        break;
+    }
 }

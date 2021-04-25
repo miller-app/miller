@@ -20,50 +20,56 @@
  *
  */
 
-#include "ArrayArithmetic.h"
 #include "DspSubtract.h"
+#include "ArrayArithmetic.h"
 
 class PdGraph;
 
 MessageObject *DspSubtract::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspSubtract(initMessage, graph);
+    return new DspSubtract(initMessage, graph);
 }
 
-DspSubtract::DspSubtract(PdMessage *initMessage, PdGraph *graph) : DspObject(2, 2, 0, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  processFunctionNoMessage = &processScalar;
+DspSubtract::DspSubtract(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(2, 2, 0, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    processFunctionNoMessage = &processScalar;
 }
 
 DspSubtract::~DspSubtract() {
-  // nothing to do
+    // nothing to do
 }
 
 string DspSubtract::toString() {
-  const char *fmt = (constant == 0.0f) ? "%s" : "%s %g";
-  char str[snprintf(NULL, 0, fmt, getObjectLabel(), constant)+1];
-  snprintf(str, sizeof(str), fmt, getObjectLabel(), constant);
-  return string(str);
+    const char *fmt = (constant == 0.0f) ? "%s" : "%s %g";
+    char str[snprintf(NULL, 0, fmt, getObjectLabel(), constant) + 1];
+    snprintf(str, sizeof(str), fmt, getObjectLabel(), constant);
+    return string(str);
 }
 
 void DspSubtract::onInletConnectionUpdate(unsigned int inletIndex) {
-  processFunction = (incomingDspConnections[0].size() > 0 && incomingDspConnections[1].size() > 0)
-      ? &processSignal : processScalar;
+    processFunction = (incomingDspConnections[0].size() > 0 &&
+                       incomingDspConnections[1].size() > 0)
+                          ? &processSignal
+                          : processScalar;
 }
 
 void DspSubtract::processMessage(int inletIndex, PdMessage *message) {
-  if (inletIndex == 1) {
-    if (message->isFloat(0)) constant = message->getFloat(0);
-  }
+    if (inletIndex == 1) {
+        if (message->isFloat(0))
+            constant = message->getFloat(0);
+    }
 }
 
-void DspSubtract::processSignal(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspSubtract *d = reinterpret_cast<DspSubtract *>(dspObject);
-  ArrayArithmetic::subtract(d->dspBufferAtInlet[0], d->dspBufferAtInlet[1],
-      d->dspBufferAtOutlet[0], 0, toIndex);
+void DspSubtract::processSignal(DspObject *dspObject, int fromIndex,
+                                int toIndex) {
+    DspSubtract *d = reinterpret_cast<DspSubtract *>(dspObject);
+    ArrayArithmetic::subtract(d->dspBufferAtInlet[0], d->dspBufferAtInlet[1],
+                              d->dspBufferAtOutlet[0], 0, toIndex);
 }
 
-void DspSubtract::processScalar(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspSubtract *d = reinterpret_cast<DspSubtract *>(dspObject);
-  ArrayArithmetic::subtract(d->dspBufferAtInlet[0], d->constant,
-      d->dspBufferAtOutlet[0], fromIndex, toIndex);
+void DspSubtract::processScalar(DspObject *dspObject, int fromIndex,
+                                int toIndex) {
+    DspSubtract *d = reinterpret_cast<DspSubtract *>(dspObject);
+    ArrayArithmetic::subtract(d->dspBufferAtInlet[0], d->constant,
+                              d->dspBufferAtOutlet[0], fromIndex, toIndex);
 }

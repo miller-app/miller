@@ -43,8 +43,6 @@ class MessageAdd : public MessageObject {
     float constant;
 };
 
-inline const char *MessageAdd::getObjectLabel() {
-  return "+";
-}
+inline const char *MessageAdd::getObjectLabel() { return "+"; }
 
 #endif // _MESSAGE_ADD_H_

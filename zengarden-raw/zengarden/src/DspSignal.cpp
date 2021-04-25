@@ -20,37 +20,40 @@
  *
  */
 
-#include "ArrayArithmetic.h"
 #include "DspSignal.h"
+#include "ArrayArithmetic.h"
 #include "PdGraph.h"
 
 MessageObject *DspSignal::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspSignal(initMessage, graph);
+    return new DspSignal(initMessage, graph);
 }
 
-DspSignal::DspSignal(PdMessage *initMessage, PdGraph *graph) : DspObject(1, 0, 0, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  processFunction = &processScalar;
-  processFunctionNoMessage = &processScalar;
+DspSignal::DspSignal(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(1, 0, 0, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    processFunction = &processScalar;
+    processFunctionNoMessage = &processScalar;
 }
 
 DspSignal::~DspSignal() {
-  // nothing to do
+    // nothing to do
 }
 
 string DspSignal::toString() {
-  char str[snprintf(NULL, 0, "%s %g", getObjectLabel(), constant)+1];
-  snprintf(str, sizeof(str), "%s %g", getObjectLabel(), constant);
-  return string(str);
+    char str[snprintf(NULL, 0, "%s %g", getObjectLabel(), constant) + 1];
+    snprintf(str, sizeof(str), "%s %g", getObjectLabel(), constant);
+    return string(str);
 }
 
 void DspSignal::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    constant = message->getFloat(0);
-  }
+    if (message->isFloat(0)) {
+        constant = message->getFloat(0);
+    }
 }
 
-void DspSignal::processScalar(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspSignal *d = reinterpret_cast<DspSignal *>(dspObject);
-  ArrayArithmetic::fill(d->dspBufferAtOutlet[0], d->constant, fromIndex, toIndex);
+void DspSignal::processScalar(DspObject *dspObject, int fromIndex,
+                              int toIndex) {
+    DspSignal *d = reinterpret_cast<DspSignal *>(dspObject);
+    ArrayArithmetic::fill(d->dspBufferAtOutlet[0], d->constant, fromIndex,
+                          toIndex);
 }

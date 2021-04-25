@@ -20,54 +20,53 @@
  *
  */
 
-#include <stdio.h>
 #include "MessageNotein.h"
+#include <stdio.h>
 
-MessageObject *MessageNotein::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageNotein(initMessage, graph);
+MessageObject *MessageNotein::newObject(PdMessage *initMessage,
+                                        PdGraph *graph) {
+    return new MessageNotein(initMessage, graph);
 }
 
-MessageNotein::MessageNotein(PdMessage *initMessage, PdGraph *graph) :
-    RemoteMessageReceiver(0, 3, graph) {
-  if (initMessage->isFloat(0) &&
-      (initMessage->getFloat(0) >= 1.0f && initMessage->getFloat(0) <= 16.0f)) {
-    // channel provided (Pd channels are indexed from 1, while ZG channels are indexed from 0)
-    channel = (int) (initMessage->getFloat(0)-1.0f);
-    name = (char *) calloc(13, sizeof(char));
-    sprintf(name, "zg_notein_%i", channel);
-  } else {
-    // no channel provided, use omni
-    channel = -1;
-    name = StaticUtils::copyString((char *) "zg_notein_omni");
-  }
+MessageNotein::MessageNotein(PdMessage *initMessage, PdGraph *graph)
+    : RemoteMessageReceiver(0, 3, graph) {
+    if (initMessage->isFloat(0) && (initMessage->getFloat(0) >= 1.0f &&
+                                    initMessage->getFloat(0) <= 16.0f)) {
+        // channel provided (Pd channels are indexed from 1, while ZG channels
+        // are indexed from 0)
+        channel = (int)(initMessage->getFloat(0) - 1.0f);
+        name = (char *)calloc(13, sizeof(char));
+        sprintf(name, "zg_notein_%i", channel);
+    } else {
+        // no channel provided, use omni
+        channel = -1;
+        name = StaticUtils::copyString((char *)"zg_notein_omni");
+    }
 }
 
-MessageNotein::~MessageNotein() {
-  free(name);
-}
+MessageNotein::~MessageNotein() { free(name); }
 
-int MessageNotein::getChannel() {
-  return channel;
-}
+int MessageNotein::getChannel() { return channel; }
 
-bool MessageNotein::isOmni() {
-  return (channel == -1);
-}
+bool MessageNotein::isOmni() { return (channel == -1); }
 
 void MessageNotein::processMessage(int inletIndex, PdMessage *message) {
-  PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-  
-  if (isOmni()) {
-    // send channel
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), message->getFloat(2));
-    sendMessage(2, outgoingMessage);
-  }
-  
-  // send velocity
-  outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), message->getFloat(1));
-  sendMessage(1, outgoingMessage);
-  
-  // send note
-  outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), message->getFloat(0));
-  sendMessage(0, outgoingMessage);
+    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+
+    if (isOmni()) {
+        // send channel
+        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                   message->getFloat(2));
+        sendMessage(2, outgoingMessage);
+    }
+
+    // send velocity
+    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                               message->getFloat(1));
+    sendMessage(1, outgoingMessage);
+
+    // send note
+    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                               message->getFloat(0));
+    sendMessage(0, outgoingMessage);
 }

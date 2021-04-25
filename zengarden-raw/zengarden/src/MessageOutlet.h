@@ -2,7 +2,7 @@
  *  Copyright 2009,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,28 +27,26 @@
 
 /** [outlet] */
 class MessageOutlet : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageOutlet(PdMessage *initMessage, PdGraph *graph);
     ~MessageOutlet();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
     ObjectType getObjectType();
-  
+
     bool isLeafNode();
-  
+
     void receiveMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageOutlet::getObjectLabel() {
-  return "outlet";
-}
+inline const char *MessageOutlet::getObjectLabel() { return "outlet"; }
 
 inline std::string MessageOutlet::toString() {
-  return MessageOutlet::getObjectLabel();
+    return MessageOutlet::getObjectLabel();
 }
 
 #endif // _MESSAGE_OUTLET_H_

@@ -35,17 +35,15 @@ class MessageLog : public MessageObject {
 
     static const char *getObjectLabel();
     std::string toString();
-  
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageLog::getObjectLabel() {
-  return "log";
-}
+inline const char *MessageLog::getObjectLabel() { return "log"; }
 
 inline std::string MessageLog::toString() {
-  return MessageLog::getObjectLabel();
+    return MessageLog::getObjectLabel();
 }
 
 #endif // _MESSAGE_LOG_H_

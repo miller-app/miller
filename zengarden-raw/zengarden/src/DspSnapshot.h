@@ -27,28 +27,26 @@
 
 /** [snapshot~] */
 class DspSnapshot : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspSnapshot(PdMessage *initMessage, PdGraph *graph);
     ~DspSnapshot();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
     ConnectionType getConnectionType(int outletIndex);
-    
+
   private:
     static void processNull(DspObject *dspObject, int fromIndex, int toIndex);
     void processMessage(int inletIndex, PdMessage *message);
 };
 
 inline std::string DspSnapshot::toString() {
-  return DspSnapshot::getObjectLabel();
+    return DspSnapshot::getObjectLabel();
 }
 
-inline const char *DspSnapshot::getObjectLabel() {
-  return "snapshot~";
-}
+inline const char *DspSnapshot::getObjectLabel() { return "snapshot~"; }
 
 #endif // _DSP_SNAPSHOT_H_

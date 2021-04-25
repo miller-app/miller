@@ -20,37 +20,42 @@
  *
  */
 
-#include "ArrayArithmetic.h"
 #include "DspRifft.h"
+#include "ArrayArithmetic.h"
 #include "PdGraph.h"
 
 MessageObject *DspRifft::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspRifft(initMessage, graph);
+    return new DspRifft(initMessage, graph);
 }
 
-DspRifft::DspRifft(PdMessage *initMessage, PdGraph *graph) : DspObject(0, 2, 0, 1, graph) {
-  #if __APPLE__
-  log2n = lrintf(log2f((float) blockSizeInt));
-  fftSetup = vDSP_create_fftsetup(log2n, kFFTRadix2);
-  #else
-  graph->printErr("[rifft~] is not supported on this platform. It is only supported on Apple OS X and iOS platforms.");
-  #endif // __APPLE__
+DspRifft::DspRifft(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(0, 2, 0, 1, graph) {
+#if __APPLE__
+    log2n = lrintf(log2f((float)blockSizeInt));
+    fftSetup = vDSP_create_fftsetup(log2n, kFFTRadix2);
+#else
+    graph->printErr("[rifft~] is not supported on this platform. It is only "
+                    "supported on Apple OS X and iOS platforms.");
+#endif // __APPLE__
 }
 
 DspRifft::~DspRifft() {
-  #if __APPLE__
-  vDSP_destroy_fftsetup(fftSetup);
-  #endif // __APPLE__
+#if __APPLE__
+    vDSP_destroy_fftsetup(fftSetup);
+#endif // __APPLE__
 }
 
 void DspRifft::processDspWithIndex(int fromIndex, int toIndex) {
-  #if __APPLE__
-  DSPSplitComplex inputVector;
-  inputVector.realp = dspBufferAtInlet[0];
-  inputVector.imagp = dspBufferAtInlet[1];
-  DSPSplitComplex outputVector;
-  outputVector.realp = dspBufferAtOutlet[0];
-  outputVector.imagp = (float *) alloca(blockSizeInt*sizeof(float)); // this buffer will not contain any useful data
-  vDSP_fft_zop(fftSetup, &inputVector, 1, &outputVector, 1, log2n, kFFTDirection_Inverse);
-  #endif // __APPLE__
+#if __APPLE__
+    DSPSplitComplex inputVector;
+    inputVector.realp = dspBufferAtInlet[0];
+    inputVector.imagp = dspBufferAtInlet[1];
+    DSPSplitComplex outputVector;
+    outputVector.realp = dspBufferAtOutlet[0];
+    outputVector.imagp = (float *)alloca(
+        blockSizeInt *
+        sizeof(float)); // this buffer will not contain any useful data
+    vDSP_fft_zop(fftSetup, &inputVector, 1, &outputVector, 1, log2n,
+                 kFFTDirection_Inverse);
+#endif // __APPLE__
 }

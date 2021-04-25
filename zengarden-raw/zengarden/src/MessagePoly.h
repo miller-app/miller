@@ -1,6 +1,6 @@
 /*
  *  Copyright 2017 Jacob A. Stern
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -39,11 +39,11 @@ class MessagePoly : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 
     struct Voice {
-      Voice() : pitch(0), used(false), serial(0L) {}
+        Voice() : pitch(0), used(false), serial(0L) {}
 
-      float pitch;
-      bool used;
-      unsigned long serial;
+        float pitch;
+        bool used;
+        unsigned long serial;
     };
 
     std::vector<Voice> voices;
@@ -53,12 +53,10 @@ class MessagePoly : public MessageObject {
     bool steal;
 };
 
-inline const char *MessagePoly::getObjectLabel() {
-  return "poly";
-}
+inline const char *MessagePoly::getObjectLabel() { return "poly"; }
 
 inline std::string MessagePoly::toString() {
-  return MessagePoly::getObjectLabel();
+    return MessagePoly::getObjectLabel();
 }
 
 #endif // _MESSAGE_POLY_H

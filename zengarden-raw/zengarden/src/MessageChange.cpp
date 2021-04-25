@@ -22,46 +22,50 @@
 
 #include "MessageChange.h"
 
-MessageObject *MessageChange::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageChange(initMessage, graph);
+MessageObject *MessageChange::newObject(PdMessage *initMessage,
+                                        PdGraph *graph) {
+    return new MessageChange(initMessage, graph);
 }
 
-MessageChange::MessageChange(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-   prevValue = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageChange::MessageChange(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    prevValue = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageChange::~MessageChange() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageChange::processMessage(int inletIndex, PdMessage *message) {
-  switch (message->getType(0)) {
+    switch (message->getType(0)) {
     case FLOAT: {
-      // output only if input is different than what is already there
-      float messageValue = message->getFloat(0);
-      if (messageValue != prevValue) {
-        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), messageValue);
-        prevValue = messageValue;
-        sendMessage(0, outgoingMessage);
-      }
-      break;
+        // output only if input is different than what is already there
+        float messageValue = message->getFloat(0);
+        if (messageValue != prevValue) {
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       messageValue);
+            prevValue = messageValue;
+            sendMessage(0, outgoingMessage);
+        }
+        break;
     }
     case BANG: {
-      // force output
-      PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-      outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), prevValue);
-      sendMessage(0, outgoingMessage);
-      break;
+        // force output
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                   prevValue);
+        sendMessage(0, outgoingMessage);
+        break;
     }
     case SYMBOL: {
-      if (message->isSymbol(0, "set") && message->isFloat(1)) {
-        prevValue = message->getFloat(1);
-      }
-      break;
+        if (message->isSymbol(0, "set") && message->isFloat(1)) {
+            prevValue = message->getFloat(1);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

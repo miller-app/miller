@@ -22,54 +22,60 @@
 
 #include "MessageModulus.h"
 
-MessageObject *MessageModulus::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageModulus(initMessage, graph);
+MessageObject *MessageModulus::newObject(PdMessage *initMessage,
+                                         PdGraph *graph) {
+    return new MessageModulus(initMessage, graph);
 }
 
-MessageModulus::MessageModulus(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  lastOutput = 0.0f;
+MessageModulus::MessageModulus(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    lastOutput = 0.0f;
 }
 
 MessageModulus::~MessageModulus() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageModulus::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          float remainder = (constant == 0.0f) ? 0.0f : (int) message-> getFloat(0) % (int) constant;
-          lastOutput = (remainder < 0) ? remainder + fabsf(constant) : remainder;
-          // allow fallthrough
+            float remainder = (constant == 0.0f)
+                                  ? 0.0f
+                                  : (int)message->getFloat(0) % (int)constant;
+            lastOutput =
+                (remainder < 0) ? remainder + fabsf(constant) : remainder;
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), lastOutput);
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       lastOutput);
+            sendMessage(0, outgoingMessage);
+            break;
         }
         default: {
-          break;
+            break;
         }
-      }
-      break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }
 
 std::string MessageModulus::toString() {
-  char str[snprintf(NULL, 0, "mod %g", constant)+1];
-  snprintf(str, sizeof(str), "mod %g", constant);
-  return str;
+    char str[snprintf(NULL, 0, "mod %g", constant) + 1];
+    snprintf(str, sizeof(str), "mod %g", constant);
+    return str;
 }

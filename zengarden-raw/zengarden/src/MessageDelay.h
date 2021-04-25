@@ -2,7 +2,7 @@
  *  Copyright 2009,2010,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,38 +27,36 @@
 
 /**
  * [delay float]
- * A delay only has one outstanding message at any time. If a scheduled message already exists
- * and a new message is sent into the object, then the previously scheduled message will be cancelled
- * and the new one rescheduled. For a generalised delay line, use the pipe (<code>MessagePipe</code>)
- * object.
+ * A delay only has one outstanding message at any time. If a scheduled message
+ * already exists and a new message is sent into the object, then the previously
+ * scheduled message will be cancelled and the new one rescheduled. For a
+ * generalised delay line, use the pipe (<code>MessagePipe</code>) object.
  */
 class MessageDelay : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageDelay(PdMessage *initMessage, PdGraph *graph);
     ~MessageDelay();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
     void sendMessage(int outletIndex, PdMessage *message);
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     void cancelScheduledMessageIfExists();
-  
+
     double delayMs;
     PdMessage *scheduledMessage;
 };
 
-inline const char *MessageDelay::getObjectLabel() {
-  return "delay";
-}
+inline const char *MessageDelay::getObjectLabel() { return "delay"; }
 
 inline std::string MessageDelay::toString() {
-  return MessageDelay::getObjectLabel();
+    return MessageDelay::getObjectLabel();
 }
 
 #endif // _MESSAGE_DELAY_H_

@@ -23,32 +23,30 @@
 #ifndef _MESSAGE_CPUTIME_H_
 #define _MESSAGE_CPUTIME_H_
 
-#include <sys/time.h>
 #include "MessageObject.h"
+#include <sys/time.h>
 
 /** [cputime]: returns the elapsed real time. */
 class MessageCputime : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageCputime(PdMessage *initMessage, PdGraph *graph);
     ~MessageCputime();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     timeval start;
 };
 
-inline const char *MessageCputime::getObjectLabel() {
-  return "cputime";
-}
+inline const char *MessageCputime::getObjectLabel() { return "cputime"; }
 
 inline std::string MessageCputime::toString() {
-  return MessageCputime::getObjectLabel();
+    return MessageCputime::getObjectLabel();
 }
 
 #endif // _MESSAGE_CPUTIME_H_

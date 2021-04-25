@@ -25,27 +25,25 @@
  */
 
 MessageObject *DspSampHold::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspSampHold(initMessage, graph);
+    return new DspSampHold(initMessage, graph);
 }
 
-DspSampHold::DspSampHold(PdMessage *initMessage, PdGraph *graph) :
-  DspObject(2, 2, 0, 1, graph), lastControlVal(0), sample(0) {
-}
+DspSampHold::DspSampHold(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(2, 2, 0, 1, graph), lastControlVal(0), sample(0) {}
 
-DspSampHold::~DspSampHold() {
-}
+DspSampHold::~DspSampHold() {}
 
 void DspSampHold::processMessage(int inletIndex, PdMessage *message) {
-  // TODO
+    // TODO
 }
 
 void DspSampHold::processDspWithIndex(int fromIndex, int toIndex) {
-  for (int i = fromIndex; i < toIndex; i++) {
-    float compare = dspBufferAtInlet[1][i];
-    if (lastControlVal > compare) {
-      sample = dspBufferAtInlet[0][i];
+    for (int i = fromIndex; i < toIndex; i++) {
+        float compare = dspBufferAtInlet[1][i];
+        if (lastControlVal > compare) {
+            sample = dspBufferAtInlet[0][i];
+        }
+        lastControlVal = compare;
+        dspBufferAtOutlet[0][i] = sample;
     }
-    lastControlVal = compare;
-    dspBufferAtOutlet[0][i] = sample;
-  }
 }

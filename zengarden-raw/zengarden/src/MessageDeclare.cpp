@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -22,16 +22,22 @@
 
 #include "MessageDeclare.h"
 
-MessageObject *MessageDeclare::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageDeclare(initMessage, graph);
+MessageObject *MessageDeclare::newObject(PdMessage *initMessage,
+                                         PdGraph *graph) {
+    return new MessageDeclare(initMessage, graph);
 }
 
-MessageDeclare::MessageDeclare(PdMessage *initMessage, PdGraph *graph) : MessageObject(0, 0, graph) {
-  target = initMessage->isSymbol(0) ? StaticUtils::copyString(initMessage->getSymbol(0)) : NULL;
-  argument = initMessage->isSymbol(1) ? StaticUtils::copyString(initMessage->getSymbol(1)) : NULL;
+MessageDeclare::MessageDeclare(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(0, 0, graph) {
+    target = initMessage->isSymbol(0)
+                 ? StaticUtils::copyString(initMessage->getSymbol(0))
+                 : NULL;
+    argument = initMessage->isSymbol(1)
+                   ? StaticUtils::copyString(initMessage->getSymbol(1))
+                   : NULL;
 }
 
 MessageDeclare::~MessageDeclare() {
-  free(target);
-  free(argument);
+    free(target);
+    free(argument);
 }

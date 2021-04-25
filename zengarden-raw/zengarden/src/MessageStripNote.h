@@ -27,25 +27,23 @@
 
 /** [stripnote] */
 class MessageStripNote : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageStripNote(PdMessage *initMessage, PdGraph *graph);
     ~MessageStripNote();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageStripNote::getObjectLabel() {
-  return "stripnote";
-}
+inline const char *MessageStripNote::getObjectLabel() { return "stripnote"; }
 
 inline std::string MessageStripNote::toString() {
-  return MessageStripNote::getObjectLabel();
+    return MessageStripNote::getObjectLabel();
 }
 
 #endif // _MESSAGE_STRIP_NOTE_H_

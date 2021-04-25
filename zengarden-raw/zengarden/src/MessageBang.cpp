@@ -23,19 +23,19 @@
 #include "MessageBang.h"
 
 MessageObject *MessageBang::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageBang(graph);
+    return new MessageBang(graph);
 }
 
 MessageBang::MessageBang(PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+    // nothing to do
 }
 
 MessageBang::~MessageBang() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageBang::processMessage(int inletIndex, PdMessage *message) {
-  PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-  outgoingMessage->initWithTimestampAndBang(message->getTimestamp());
-  sendMessage(0, outgoingMessage);
+    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+    outgoingMessage->initWithTimestampAndBang(message->getTimestamp());
+    sendMessage(0, outgoingMessage);
 }

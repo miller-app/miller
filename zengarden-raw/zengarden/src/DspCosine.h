@@ -38,18 +38,15 @@ class DspCosine : public DspObject {
 
   private:
     static void procesSignal(DspObject *dspObject, int fromIndex, int toIndex);
-  
+
     float sampleRate;
     static float *cos_table; // the Cosine lookup table
-    static int refCount; // a reference counter for Cosine table. Now we know when to free it.
+    static int refCount; // a reference counter for Cosine table. Now we know
+                         // when to free it.
 };
 
-inline std::string DspCosine::toString() {
-  return DspCosine::getObjectLabel();
-}
+inline std::string DspCosine::toString() { return DspCosine::getObjectLabel(); }
 
-inline const char *DspCosine::getObjectLabel() {
-  return "cos~";
-}
+inline const char *DspCosine::getObjectLabel() { return "cos~"; }
 
 #endif // _DSP_COSINE_H_

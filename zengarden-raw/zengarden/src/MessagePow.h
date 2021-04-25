@@ -43,8 +43,6 @@ class MessagePow : public MessageObject {
     float last;
 };
 
-inline const char *MessagePow::getObjectLabel() {
-  return "pow";
-}
+inline const char *MessagePow::getObjectLabel() { return "pow"; }
 
 #endif // _MESSAGE_POW_H_

@@ -41,11 +41,9 @@ class MessageAbsoluteValue : public MessageObject {
 };
 
 inline std::string MessageAbsoluteValue::toString() {
-  return MessageAbsoluteValue::getObjectLabel();
+    return MessageAbsoluteValue::getObjectLabel();
 }
 
-inline const char *MessageAbsoluteValue::getObjectLabel() {
-  return "abs";
-}
+inline const char *MessageAbsoluteValue::getObjectLabel() { return "abs"; }
 
 #endif // _MESSAGE_ABSOLUTEVALUE_H_

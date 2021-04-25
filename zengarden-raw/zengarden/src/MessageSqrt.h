@@ -40,12 +40,10 @@ class MessageSqrt : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageSqrt::getObjectLabel() {
-  return "sqrt";
-}
+inline const char *MessageSqrt::getObjectLabel() { return "sqrt"; }
 
 inline std::string MessageSqrt::toString() {
-  return MessageSqrt::getObjectLabel();
+    return MessageSqrt::getObjectLabel();
 }
 
 #endif // _MESSAGE_SQRT_H_

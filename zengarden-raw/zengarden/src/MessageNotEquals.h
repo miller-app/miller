@@ -43,8 +43,6 @@ class MessageNotEquals : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageNotEquals::getObjectLabel() {
-  return "!=";
-}
+inline const char *MessageNotEquals::getObjectLabel() { return "!="; }
 
 #endif // _MESSAGE_NOTEQUALS_H_

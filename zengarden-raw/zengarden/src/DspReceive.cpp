@@ -20,41 +20,46 @@
  *
  */
 
-#include "BufferPool.h"
 #include "DspReceive.h"
+#include "BufferPool.h"
 #include "PdGraph.h"
 
 MessageObject *DspReceive::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspReceive(initMessage, graph);
+    return new DspReceive(initMessage, graph);
 }
 
-DspReceive::DspReceive(PdMessage *initMessage, PdGraph *graph) : DspObject(1, 0, 0, 1, graph) {
-  if (initMessage->isSymbol(0)) {
-    name = StaticUtils::copyString(initMessage->getSymbol(0));
-    dspBufferAtOutlet[0] = ALLOC_ALIGNED_BUFFER(graph->getBlockSize() * sizeof(float));
-  } else {
-    name = NULL;
-    graph->printErr("receive~ not initialised with a name.");
-  }
-  processFunction = &processSignal;
-  
-  // this pointer contains the send buffer
-  // default to zero buffer
-  dspBufferAtInlet[0] = graph->getBufferPool()->getZeroBuffer();
+DspReceive::DspReceive(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(1, 0, 0, 1, graph) {
+    if (initMessage->isSymbol(0)) {
+        name = StaticUtils::copyString(initMessage->getSymbol(0));
+        dspBufferAtOutlet[0] =
+            ALLOC_ALIGNED_BUFFER(graph->getBlockSize() * sizeof(float));
+    } else {
+        name = NULL;
+        graph->printErr("receive~ not initialised with a name.");
+    }
+    processFunction = &processSignal;
+
+    // this pointer contains the send buffer
+    // default to zero buffer
+    dspBufferAtInlet[0] = graph->getBufferPool()->getZeroBuffer();
 }
 
 DspReceive::~DspReceive() {
-  free(name);
-  FREE_ALIGNED_BUFFER(dspBufferAtOutlet[0]);
+    free(name);
+    FREE_ALIGNED_BUFFER(dspBufferAtOutlet[0]);
 }
 
 void DspReceive::processMessage(int inletIndex, PdMessage *message) {
-  if (message->hasFormat("ss") && message->isSymbol(0, "set")) {
-    graph->printErr("[receive~ %s]: message \"set %s\" is not supported.", name, message->getSymbol(1));
-  }
+    if (message->hasFormat("ss") && message->isSymbol(0, "set")) {
+        graph->printErr("[receive~ %s]: message \"set %s\" is not supported.",
+                        name, message->getSymbol(1));
+    }
 }
 
-void DspReceive::processSignal(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspReceive *d = reinterpret_cast<DspReceive *>(dspObject);
-  memcpy(d->dspBufferAtOutlet[0], d->dspBufferAtInlet[0], toIndex*sizeof(float));
+void DspReceive::processSignal(DspObject *dspObject, int fromIndex,
+                               int toIndex) {
+    DspReceive *d = reinterpret_cast<DspReceive *>(dspObject);
+    memcpy(d->dspBufferAtOutlet[0], d->dspBufferAtInlet[0],
+           toIndex * sizeof(float));
 }

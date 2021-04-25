@@ -28,25 +28,21 @@
 
 /** [sqrt~], [q8_sqrt~] */
 class DspSqrt : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspSqrt(PdMessage *initMessage, PdGraph *graph);
     ~DspSqrt();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
   private:
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
 };
 
-inline const char *DspSqrt::getObjectLabel() {
-  return "sqrt~";
-}
+inline const char *DspSqrt::getObjectLabel() { return "sqrt~"; }
 
-inline std::string DspSqrt::toString() {
-  return DspSqrt::getObjectLabel();
-}
+inline std::string DspSqrt::toString() { return DspSqrt::getObjectLabel(); }
 
 #endif // _DSP_SQRT_H_

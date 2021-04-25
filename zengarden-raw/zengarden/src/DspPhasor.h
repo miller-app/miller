@@ -30,7 +30,8 @@ class DspPhasor : public DspObject {
 
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
-    DspPhasor(PdMessage *initMessage, PdGraph *graph); // and Phasorillator of default zero frequency
+    DspPhasor(PdMessage *initMessage,
+              PdGraph *graph); // and Phasorillator of default zero frequency
     ~DspPhasor();
 
     void onInletConnectionUpdate(unsigned int inletIndex);
@@ -41,20 +42,18 @@ class DspPhasor : public DspObject {
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
     static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     float frequency;
-  
-    #if __SSE3__
-    __m64 inc; // the amount by which to increment indicies every step
+
+#if __SSE3__
+    __m64 inc;      // the amount by which to increment indicies every step
     __m64 indicies; // the table lookup indicies
-    #else
+#else
     float inc;
     float offset;
-    #endif
+#endif
 };
 
-inline const char *DspPhasor::getObjectLabel() {
-  return "phasor~";
-}
+inline const char *DspPhasor::getObjectLabel() { return "phasor~"; }
 
 #endif // _DSP_PHASOR_H_

@@ -2,7 +2,7 @@
  *  Copyright 2009,2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -29,32 +29,30 @@ class PdGraph;
 
 /** [metro], [metro float] */
 class MessageMetro : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageMetro(PdMessage *initMessage, PdGraph *graph);
     ~MessageMetro();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
     void sendMessage(int outletIndex, PdMessage *message);
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     /* Cancels the current <code>pendingMessage</code>. */
     void stopMetro();
-  
+
     /** @param  timestamp The time at which the metro should be started. */
     void startMetro(double timestamp);
-  
+
     PdMessage *pendingMessage;
     double intervalInMs;
 };
 
-inline const char *MessageMetro::getObjectLabel() {
-  return "metro";
-}
+inline const char *MessageMetro::getObjectLabel() { return "metro"; }
 
 #endif // _MESSAGE_METRO_H_

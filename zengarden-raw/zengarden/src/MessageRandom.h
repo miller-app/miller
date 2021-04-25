@@ -49,12 +49,10 @@ class MessageRandom : public MessageObject {
     MTRand *twister;
 };
 
-inline const char *MessageRandom::getObjectLabel() {
-  return "random";
-}
+inline const char *MessageRandom::getObjectLabel() { return "random"; }
 
 inline std::string MessageRandom::toString() {
-  return MessageRandom::getObjectLabel();
+    return MessageRandom::getObjectLabel();
 }
 
 #endif // _MESSAGE_RANDOM_H_

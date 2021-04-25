@@ -2,7 +2,7 @@
  *  Copyright 2009,2012 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,33 +27,28 @@
 
 /** [send|s] */
 class MessageSend : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageSend(PdMessage *initMessage, PdGraph *graph);
     ~MessageSend();
-    
+
     static const char *getObjectLabel();
     std::string toString();
     ObjectType getObjectType();
-  
+
     void receiveMessage(int inletIndex, PdMessage *message);
-  
+
   private:
     char *name;
-  
 };
 
-inline const char *MessageSend::getObjectLabel() {
-  return "send";
-}
+inline const char *MessageSend::getObjectLabel() { return "send"; }
 
 inline std::string MessageSend::toString() {
-  return std::string(MessageSend::getObjectLabel()) + " " + name;
+    return std::string(MessageSend::getObjectLabel()) + " " + name;
 }
 
-inline ObjectType MessageSend::getObjectType() {
-  return MESSAGE_SEND;
-}
+inline ObjectType MessageSend::getObjectType() { return MESSAGE_SEND; }
 
 #endif // _MESSAGE_SEND_H_

@@ -22,53 +22,56 @@
 
 #include "MessageNotEquals.h"
 
-MessageObject *MessageNotEquals::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageNotEquals(initMessage, graph);
+MessageObject *MessageNotEquals::newObject(PdMessage *initMessage,
+                                           PdGraph *graph) {
+    return new MessageNotEquals(initMessage, graph);
 }
 
-MessageNotEquals::MessageNotEquals(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  lastOutput = 0.0f;
+MessageNotEquals::MessageNotEquals(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    lastOutput = 0.0f;
 }
 
 MessageNotEquals::~MessageNotEquals() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageNotEquals::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          lastOutput = (message->getFloat(0) != constant) ? 1.0f : 0.0f;
-          // allow fallthrough
+            lastOutput = (message->getFloat(0) != constant) ? 1.0f : 0.0f;
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), lastOutput);
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       lastOutput);
+            sendMessage(0, outgoingMessage);
+            break;
         }
         default: {
-          break;
+            break;
         }
-      }
-      break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }
 
 std::string MessageNotEquals::toString() {
-  char str[snprintf(NULL, 0, "!= %g", constant)+1];
-  snprintf(str, sizeof(str), "!= %g", constant);
-  return string(str);
+    char str[snprintf(NULL, 0, "!= %g", constant) + 1];
+    snprintf(str, sizeof(str), "!= %g", constant);
+    return string(str);
 }

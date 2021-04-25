@@ -34,19 +34,17 @@ class DspSubtract : public DspObject {
 
     static const char *getObjectLabel();
     std::string toString();
-  
+
     void onInletConnectionUpdate(unsigned int inletIndex);
 
   private:
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
     static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     float constant;
 };
 
-inline const char *DspSubtract::getObjectLabel() {
-  return "-~";
-}
+inline const char *DspSubtract::getObjectLabel() { return "-~"; }
 
 #endif // _DSP_SUBTRACT_H_

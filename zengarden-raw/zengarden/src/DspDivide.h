@@ -39,14 +39,12 @@ class DspDivide : public DspObject {
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
     static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     void onInletConnectionUpdate(unsigned int inletIndex);
-  
+
     float constant;
 };
 
-inline const char *DspDivide::getObjectLabel() {
-  return "/~";
-}
+inline const char *DspDivide::getObjectLabel() { return "/~"; }
 
 #endif // _DSP_DIVIDE_H_

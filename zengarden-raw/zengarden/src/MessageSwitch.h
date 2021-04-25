@@ -25,14 +25,14 @@
 
 #include "MessageObject.h"
 
-/* 
- * Even though switch~ acts on the DSP domain, it only processes messages. Thus it is represented
- * internally as a message object.
+/*
+ * Even though switch~ acts on the DSP domain, it only processes messages. Thus
+ * it is represented internally as a message object.
  * TODO(mhroth): This object currently only turns DSP processing on and off.
  */
 /** [switch~] */
 class MessageSwitch : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageSwitch(PdMessage *initMessage, PdGraph *graph);
@@ -45,12 +45,10 @@ class MessageSwitch : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageSwitch::getObjectLabel() {
-  return "switch~";
-}
+inline const char *MessageSwitch::getObjectLabel() { return "switch~"; }
 
 inline std::string MessageSwitch::toString() {
-  return MessageSwitch::getObjectLabel();
+    return MessageSwitch::getObjectLabel();
 }
 
 #endif // _MESSAGE_SWITCH_H_

@@ -22,39 +22,44 @@
 
 #include "MessageCputime.h"
 
-MessageObject *MessageCputime::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageCputime(initMessage, graph);
+MessageObject *MessageCputime::newObject(PdMessage *initMessage,
+                                         PdGraph *graph) {
+    return new MessageCputime(initMessage, graph);
 }
 
-MessageCputime::MessageCputime(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  // nothing to do
+MessageCputime::MessageCputime(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    // nothing to do
 }
 
 MessageCputime::~MessageCputime() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageCputime::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (message->isBang(0)) {
-        gettimeofday(&start, NULL);
-      }
-      break;
+        if (message->isBang(0)) {
+            gettimeofday(&start, NULL);
+        }
+        break;
     }
     case 1: {
-      if (message->isBang(0)) {
-        timeval end;
-        gettimeofday(&end, NULL);
-        double elapsedTime = (end.tv_sec - start.tv_sec) * 1000.0; // sec to ms
-        elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0; // us to ms
-        
-        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), (float) elapsedTime);
-        sendMessage(0, outgoingMessage);
-      }
-      break;
+        if (message->isBang(0)) {
+            timeval end;
+            gettimeofday(&end, NULL);
+            double elapsedTime =
+                (end.tv_sec - start.tv_sec) * 1000.0;              // sec to ms
+            elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0; // us to ms
+
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       (float)elapsedTime);
+            sendMessage(0, outgoingMessage);
+        }
+        break;
     }
-    default: break;
-  }
+    default:
+        break;
+    }
 }

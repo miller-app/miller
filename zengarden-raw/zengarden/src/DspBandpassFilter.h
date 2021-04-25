@@ -2,7 +2,7 @@
  *  Copyright 2009,2010,2011,2012 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -30,15 +30,15 @@
  * Implements the bp~ (2-pole) dsp object.
  */
 class DspBandpassFilter : public DspFilter {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspBandpassFilter(PdMessage *initMessage, PdGraph *graph);
     ~DspBandpassFilter();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     void calcFiltCoeff(float fc, float q);
@@ -48,11 +48,9 @@ class DspBandpassFilter : public DspFilter {
 };
 
 inline std::string DspBandpassFilter::toString() {
-  return DspBandpassFilter::getObjectLabel();
+    return DspBandpassFilter::getObjectLabel();
 }
 
-inline const char *DspBandpassFilter::getObjectLabel() {
-  return "bp~";
-}
+inline const char *DspBandpassFilter::getObjectLabel() { return "bp~"; }
 
 #endif // _DSP_BAND_PASS_FILTER_H_

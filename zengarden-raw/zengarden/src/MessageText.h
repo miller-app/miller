@@ -27,30 +27,25 @@
 
 /** The object representing a comment. */
 class MessageText : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageText(PdMessage *initMessage, PdGraph *graph);
     ~MessageText();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
     const char *getComment() { return comment; }
-  
+
   private:
     char *comment;
 };
 
-inline const char *MessageText::getObjectLabel() {
-  return "text";
-}
+inline const char *MessageText::getObjectLabel() { return "text"; }
 
 inline std::string MessageText::toString() {
-  return std::string(MessageText::getObjectLabel())
-    + " '"
-    + comment
-    + "'";
+    return std::string(MessageText::getObjectLabel()) + " '" + comment + "'";
 }
 
 #endif // _MESSAGE_TEXT_H_

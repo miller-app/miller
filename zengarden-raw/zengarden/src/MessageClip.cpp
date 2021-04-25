@@ -23,60 +23,62 @@
 #include "MessageClip.h"
 
 MessageObject *MessageClip::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageClip(initMessage, graph);
+    return new MessageClip(initMessage, graph);
 }
 
-MessageClip::MessageClip(PdMessage *initMessage, PdGraph *graph) : MessageObject(3, 1, graph) {
-  if (initMessage->isFloat(0)) {
-    if (initMessage->isFloat(1)) {
-      init(initMessage->getFloat(0), initMessage->getFloat(1));
+MessageClip::MessageClip(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(3, 1, graph) {
+    if (initMessage->isFloat(0)) {
+        if (initMessage->isFloat(1)) {
+            init(initMessage->getFloat(0), initMessage->getFloat(1));
+        } else {
+            init(initMessage->getFloat(0), 0.0f);
+        }
     } else {
-      init(initMessage->getFloat(0), 0.0f);
+        init(0.0f, 0.0f);
     }
-  } else {
-    init(0.0f, 0.0f);
-  }
 }
 
 MessageClip::~MessageClip() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageClip::init(float lowerBound, float upperBound) {
-  this->lowerBound = lowerBound;
-  this->upperBound = upperBound;
+    this->lowerBound = lowerBound;
+    this->upperBound = upperBound;
 }
 
 void MessageClip::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (message->isFloat(0)) {
-        float output = message->getFloat(0);
-        if (output < lowerBound) {
-          output = lowerBound;
-        } else if (output > upperBound) {
-          output = upperBound;
+        if (message->isFloat(0)) {
+            float output = message->getFloat(0);
+            if (output < lowerBound) {
+                output = lowerBound;
+            } else if (output > upperBound) {
+                output = upperBound;
+            }
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       output);
+            sendMessage(0, outgoingMessage);
         }
-        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), output);
-        sendMessage(0, outgoingMessage);
-      }
-      break;
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        lowerBound = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            lowerBound = message->getFloat(0);
+        }
+        break;
     }
     case 2: {
-      if (message->isFloat(0)) {
-        upperBound = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            upperBound = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

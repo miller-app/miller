@@ -24,27 +24,29 @@
 #include "PdGraph.h"
 
 MessageObject *MessagePrint::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessagePrint(initMessage, graph);
+    return new MessagePrint(initMessage, graph);
 }
 
-MessagePrint::MessagePrint(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 0, graph) {
-  if (initMessage->isSymbol(0)) {
-    name = initMessage->isSymbol(0, "-n") ? NULL : StaticUtils::copyString(initMessage->getSymbol(0));
-  } else {
-    name = StaticUtils::copyString((char *) "print");
-  }
+MessagePrint::MessagePrint(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 0, graph) {
+    if (initMessage->isSymbol(0)) {
+        name = initMessage->isSymbol(0, "-n")
+                   ? NULL
+                   : StaticUtils::copyString(initMessage->getSymbol(0));
+    } else {
+        name = StaticUtils::copyString((char *)"print");
+    }
 }
 
-MessagePrint::~MessagePrint() {
-  free(name);
-}
+MessagePrint::~MessagePrint() { free(name); }
 
 void MessagePrint::processMessage(int inletIndex, PdMessage *message) {
-  char *out = message->toString();
-  if (name != NULL) {
-    graph->printStd("[@ %.3fms] %s: %s", message->getTimestamp(), name, out);
-  } else {
-    graph->printStd("[@ %.3fms] %s", message->getTimestamp(), out);
-  }
-  free(out);
+    char *out = message->toString();
+    if (name != NULL) {
+        graph->printStd("[@ %.3fms] %s: %s", message->getTimestamp(), name,
+                        out);
+    } else {
+        graph->printStd("[@ %.3fms] %s", message->getTimestamp(), out);
+    }
+    free(out);
 }

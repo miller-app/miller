@@ -40,12 +40,10 @@ class MessagePowToDb : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessagePowToDb::getObjectLabel() {
-  return "powtodb";
-}
+inline const char *MessagePowToDb::getObjectLabel() { return "powtodb"; }
 
 inline std::string MessagePowToDb::toString() {
-  return MessagePowToDb::getObjectLabel();
+    return MessagePowToDb::getObjectLabel();
 }
 
 #endif // _MESSAGE_POWTODB_H_

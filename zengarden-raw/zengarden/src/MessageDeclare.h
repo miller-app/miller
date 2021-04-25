@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -26,32 +26,31 @@
 #include "MessageObject.h"
 
 /**
- * [declare -path symbol], [declare -stdpath symbol], [declare -lib symbol], [declare -stdlib symbol]
- * This object does absolutely nothing. Declare objects have an effect by adding a "#X declare" statement
- * to the start of the netlist, rather than doing anything themselves. However, they must be added
+ * [declare -path symbol], [declare -stdpath symbol], [declare -lib symbol],
+ * [declare -stdlib symbol] This object does absolutely nothing. Declare objects
+ * have an effect by adding a "#X declare" statement to the start of the
+ * netlist, rather than doing anything themselves. However, they must be added
  * to the node list as they are indexed.
  */
 class MessageDeclare : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageDeclare(PdMessage *initMessage, PdGraph *graph);
     ~MessageDeclare();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     char *target;
     char *argument;
 };
 
-inline const char *MessageDeclare::getObjectLabel() {
-  return "declare";
-}
+inline const char *MessageDeclare::getObjectLabel() { return "declare"; }
 
 inline std::string MessageDeclare::toString() {
-  return MessageDeclare::getObjectLabel();
+    return MessageDeclare::getObjectLabel();
 }
 
 #endif // _MESSAGE_DECLARE_H_

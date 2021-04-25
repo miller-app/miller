@@ -24,39 +24,44 @@
 #include "PdGraph.h"
 
 MessageObject *DspSnapshot::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspSnapshot(initMessage, graph);
+    return new DspSnapshot(initMessage, graph);
 }
 
-DspSnapshot::DspSnapshot(PdMessage *initMessage, PdGraph *graph) : DspObject(1, 1, 1, 0, graph) {
-  processFunction = &processNull;
-  processFunctionNoMessage = &processNull;
+DspSnapshot::DspSnapshot(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(1, 1, 1, 0, graph) {
+    processFunction = &processNull;
+    processFunctionNoMessage = &processNull;
 }
 
 DspSnapshot::~DspSnapshot() {
-  // nothing to do
+    // nothing to do
 }
 
 ConnectionType DspSnapshot::getConnectionType(int outletIndex) {
-  return MESSAGE;
+    return MESSAGE;
 }
 
 void DspSnapshot::processMessage(int inletIndex, PdMessage *message) {
-  switch (message->getType(0)) {
+    switch (message->getType(0)) {
     case SYMBOL: {
-      graph->printErr("[snapshot~] does not support the \"%s\" message.", message->getSymbol(0));
-      break;
+        graph->printErr("[snapshot~] does not support the \"%s\" message.",
+                        message->getSymbol(0));
+        break;
     }
     case BANG: {
-      PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-      double blockIndex = graph->getBlockIndex(message);
-      outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), dspBufferAtInlet[0][(int) blockIndex]);
-      sendMessage(0, outgoingMessage);
-      break;
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        double blockIndex = graph->getBlockIndex(message);
+        outgoingMessage->initWithTimestampAndFloat(
+            message->getTimestamp(), dspBufferAtInlet[0][(int)blockIndex]);
+        sendMessage(0, outgoingMessage);
+        break;
     }
-    default: break;
-  }
+    default:
+        break;
+    }
 }
 
-void DspSnapshot::processNull(DspObject *dspObject, int fromIndex, int toIndex) {
-  // nothing to do. snapshot~ simply waits to process a message
+void DspSnapshot::processNull(DspObject *dspObject, int fromIndex,
+                              int toIndex) {
+    // nothing to do. snapshot~ simply waits to process a message
 }

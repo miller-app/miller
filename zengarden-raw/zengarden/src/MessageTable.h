@@ -2,7 +2,7 @@
  *  Copyright 2009,2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,44 +27,40 @@
 
 /** [table name] */
 class MessageTable : public RemoteMessageReceiver {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageTable(PdMessage *initMessage, PdGraph *graph);
     ~MessageTable();
-  
+
     static const char *getObjectLabel();
     std::string toString();
     ObjectType getObjectType();
-  
+
     /** Get a pointer to the table's buffer. */
     float *getBuffer(int *bufferLength);
-  
+
     /**
-     * Resize the table's buffer to the given buffer length. A pointer to the new buffer is returned.
-     * If the size of the requested buffer is the same as the current size, then the current
-     * buffer is returned.
+     * Resize the table's buffer to the given buffer length. A pointer to the
+     * new buffer is returned. If the size of the requested buffer is the same
+     * as the current size, then the current buffer is returned.
      */
     float *resizeBuffer(int bufferLength);
-  
+
   private:
     // tables can receive sent messages
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     float *buffer;
     int bufferLength;
 };
 
-inline const char *MessageTable::getObjectLabel() {
-  return "table";
-}
+inline const char *MessageTable::getObjectLabel() { return "table"; }
 
-inline ObjectType MessageTable::getObjectType() {
-  return MESSAGE_TABLE;
-}
+inline ObjectType MessageTable::getObjectType() { return MESSAGE_TABLE; }
 
 inline std::string MessageTable::toString() {
-  return std::string(MessageTable::getObjectLabel()) + " " + name;
+    return std::string(MessageTable::getObjectLabel()) + " " + name;
 }
 
 #endif // _MESSAGE_TABLE_H_

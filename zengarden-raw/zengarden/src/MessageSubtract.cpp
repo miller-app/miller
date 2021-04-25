@@ -22,51 +22,55 @@
 
 #include "MessageSubtract.h"
 
-MessageObject *MessageSubtract::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageSubtract(initMessage, graph);
+MessageObject *MessageSubtract::newObject(PdMessage *initMessage,
+                                          PdGraph *graph) {
+    return new MessageSubtract(initMessage, graph);
 }
 
-MessageSubtract::MessageSubtract(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  last = 0.0f;
+MessageSubtract::MessageSubtract(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    last = 0.0f;
 }
 
 MessageSubtract::~MessageSubtract() {
-  // nothing to do
+    // nothing to do
 }
 
 std::string MessageSubtract::toString() {
-  char str[snprintf(NULL, 0, "- %g", constant)+1];
-  snprintf(str, sizeof(str), "- %g", constant);
-  return str;
+    char str[snprintf(NULL, 0, "- %g", constant) + 1];
+    snprintf(str, sizeof(str), "- %g", constant);
+    return str;
 }
 
 void MessageSubtract::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          last = message->getFloat(0) - constant;
-          // allow fallthrough
+            last = message->getFloat(0) - constant;
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), last);
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       last);
+            sendMessage(0, outgoingMessage);
+            break;
         }
-        default: return;
-      }
-      break;
+        default:
+            return;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

@@ -32,27 +32,27 @@ class DspThrow;
  * Implements the receiver of a many-to-one audio connection.
  */
 class DspCatch : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspCatch(PdMessage *initMessage, PdGraph *graph);
     ~DspCatch();
 
     list<DspObject *> getProcessOrder();
-  
+
     void addThrow(DspThrow *dspThrow);
     void removeThrow(DspThrow *dspThrow);
-  
+
     const char *getName() { return name; }
     static const char *getObjectLabel() { return "catch~"; }
     ObjectType getObjectType() { return DSP_CATCH; }
     string toString();
-  
+
   private:
     static void processNone(DspObject *dspObject, int fromIndex, int toIndex);
     static void processOne(DspObject *dspObject, int fromIndex, int toIndex);
     static void processMany(DspObject *dspObject, int fromIndex, int toIndex);
-    
+
     char *name;
     list<DspThrow *> throwList; // list of associated throw~ objects
 };

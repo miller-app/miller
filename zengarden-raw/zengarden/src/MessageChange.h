@@ -42,12 +42,10 @@ class MessageChange : public MessageObject {
     float prevValue;
 };
 
-inline const char *MessageChange::getObjectLabel() {
-  return "change";
-}
+inline const char *MessageChange::getObjectLabel() { return "change"; }
 
 inline std::string MessageChange::toString() {
-  return MessageChange::getObjectLabel();
+    return MessageChange::getObjectLabel();
 }
 
 #endif // _MESSAGE_CHANGE_H_

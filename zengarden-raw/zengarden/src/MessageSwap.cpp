@@ -23,49 +23,52 @@
 #include "MessageSwap.h"
 
 MessageObject *MessageSwap::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageSwap(initMessage, graph);
+    return new MessageSwap(initMessage, graph);
 }
 
-MessageSwap::MessageSwap(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 2, graph) {
-  left = 0.0f;
-  right = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageSwap::MessageSwap(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 2, graph) {
+    left = 0.0f;
+    right = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageSwap::~MessageSwap() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageSwap::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          left = message->getFloat(0);
-          // allow fallthrough
+            left = message->getFloat(0);
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), left);
-          sendMessage(1, outgoingMessage); // send a message from outlet 1
-          
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), right);
-          sendMessage(0, outgoingMessage); // send a message from outlet 0
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       left);
+            sendMessage(1, outgoingMessage); // send a message from outlet 1
+
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       right);
+            sendMessage(0, outgoingMessage); // send a message from outlet 0
+            break;
         }
         default: {
-          break;
+            break;
         }
-      }
-      break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        right = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            right = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

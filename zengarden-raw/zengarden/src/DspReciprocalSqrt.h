@@ -27,25 +27,23 @@
 
 /** [rsqrt~], [q8_rsqrt~] */
 class DspReciprocalSqrt : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspReciprocalSqrt(PdMessage *initMessage, PdGraph *graph);
     ~DspReciprocalSqrt();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
   private:
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
 };
 
 inline std::string DspReciprocalSqrt::toString() {
-  return DspReciprocalSqrt::getObjectLabel();
+    return DspReciprocalSqrt::getObjectLabel();
 }
 
-inline const char *DspReciprocalSqrt::getObjectLabel() {
-  return "rsqrt~";
-}
+inline const char *DspReciprocalSqrt::getObjectLabel() { return "rsqrt~"; }
 
 #endif // _DSP_RSQRT_H_

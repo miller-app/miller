@@ -2,7 +2,7 @@
  *  Copyright 2010,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -23,11 +23,11 @@
 #ifndef _PD_FILE_PARSER_H_
 #define _PD_FILE_PARSER_H_
 
-#include <string>
+#include "StaticUtils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "StaticUtils.h"
+#include <string>
 
 class PdContext;
 class PdGraph;
@@ -35,10 +35,11 @@ class PdGraph;
 using namespace std;
 
 /**
- * The class parses a Pd file and iterates through each message, returning <code>NULL</code> when 
- * no more are available. Messages are returned as strings (<code>char*</code>), which represent
- * the entire logical message (though the original message may have been broken up over several
- * lines in the file.
+ * The class parses a Pd file and iterates through each message, returning
+ * <code>NULL</code> when no more are available. Messages are returned as
+ * strings (<code>char*</code>), which represent the entire logical message
+ * (though the original message may have been broken up over several lines in
+ * the file.
  */
 class PdFileParser {
 
@@ -46,27 +47,28 @@ class PdFileParser {
     PdFileParser(string directory, string fullname);
     PdFileParser(string aString);
     ~PdFileParser();
-  
+
     PdGraph *execute(PdContext *context);
 
   private:
-    PdGraph *execute(PdMessage *initMsg, PdGraph *graph, PdContext *context, bool isSubPatch);
+    PdGraph *execute(PdMessage *initMsg, PdGraph *graph, PdContext *context,
+                     bool isSubPatch);
 
     /**
-     * Returns the next logical message in the file, or <code>NULL</code> if the end of the file
-     * has been reached.
+     * Returns the next logical message in the file, or <code>NULL</code> if the
+     * end of the file has been reached.
      */
     string nextMessage();
-  
+
     /**
-     * Reads the next line and puts the contents into the <code>line</code> buffer.
-     * A pointer to the <code>line</code> buffer is returned, or <code>NULL</code> if the end of the
-     * file has been reached.
+     * Reads the next line and puts the contents into the <code>line</code>
+     * buffer. A pointer to the <code>line</code> buffer is returned, or
+     * <code>NULL</code> if the end of the file has been reached.
      */
     string nextLine();
-  
+
     string stringDesc; // entire string description of graph. Entire file.
-    size_t pos; // current position in the string
+    size_t pos;        // current position in the string
     string line;
     string message;
     string rootPath;

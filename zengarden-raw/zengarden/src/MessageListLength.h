@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,24 +27,22 @@
 
 /** [list length] */
 class MessageListLength : public MessageObject {
-  
+
   public:
     MessageListLength(PdMessage *initMessage, PdGraph *graph);
     ~MessageListLength();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageListLength::getObjectLabel() {
-  return "list length";
-}
+inline const char *MessageListLength::getObjectLabel() { return "list length"; }
 
 inline std::string MessageListLength::toString() {
-  return MessageListLength::getObjectLabel();
+    return MessageListLength::getObjectLabel();
 }
 
 #endif // _MESSAGE_LIST_LENGTH_H_

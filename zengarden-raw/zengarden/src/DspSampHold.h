@@ -29,7 +29,7 @@ class DspSampHold : public DspObject {
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspSampHold(PdMessage *initMessage, PdGraph *graph);
     ~DspSampHold();
-  
+
     static const char *getObjectLabel();
     std::string toString();
 
@@ -41,12 +41,10 @@ class DspSampHold : public DspObject {
     void processDspWithIndex(int fromIndex, int toIndex);
 };
 
-inline const char *DspSampHold::getObjectLabel() {
-  return "samphold~";
-}
+inline const char *DspSampHold::getObjectLabel() { return "samphold~"; }
 
 inline std::string DspSampHold::toString() {
-  return DspSampHold::getObjectLabel();
+    return DspSampHold::getObjectLabel();
 }
 
 #endif // _DSP_SAMP_HOLD_H_

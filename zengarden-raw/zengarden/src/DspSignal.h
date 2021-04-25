@@ -27,24 +27,22 @@
 
 /** [sig~] */
 class DspSignal : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspSignal(PdMessage *initMessage, PdGraph *graph);
     ~DspSignal();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
   private:
     static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     float constant;
 };
 
-inline const char *DspSignal::getObjectLabel() {
-  return "sig~";
-}
+inline const char *DspSignal::getObjectLabel() { return "sig~"; }
 
 #endif // _DSP_SIGNAL_H_

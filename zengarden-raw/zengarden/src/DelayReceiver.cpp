@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -22,20 +22,19 @@
 
 #include "DelayReceiver.h"
 
-DelayReceiver::DelayReceiver(int numMessageInlets, int numDspInlets, int numMessageOutlets, int numDspOutlets, PdGraph *graph) : 
-    DspObject(numMessageInlets, numDspInlets, numMessageOutlets, numDspOutlets, graph) {
-  name = NULL;
-  delayline = NULL;
+DelayReceiver::DelayReceiver(int numMessageInlets, int numDspInlets,
+                             int numMessageOutlets, int numDspOutlets,
+                             PdGraph *graph)
+    : DspObject(numMessageInlets, numDspInlets, numMessageOutlets,
+                numDspOutlets, graph) {
+    name = NULL;
+    delayline = NULL;
 }
 
-DelayReceiver::~DelayReceiver() {
-  free(name);
-}
+DelayReceiver::~DelayReceiver() { free(name); }
 
-const char *DelayReceiver::getName() {
-  return name;
-}
+const char *DelayReceiver::getName() { return name; }
 
 void DelayReceiver::setDelayline(DspDelayWrite *delayline) {
-  this->delayline = delayline;
+    this->delayline = delayline;
 }

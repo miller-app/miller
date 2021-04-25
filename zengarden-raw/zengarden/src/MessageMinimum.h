@@ -23,7 +23,6 @@
 #ifndef _MESSAGE_MINIMUM_H_
 #define _MESSAGE_MINIMUM_H_
 
-
 #include "MessageObject.h"
 
 /** [min], [min float] */
@@ -44,12 +43,10 @@ class MessageMinimum : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageMinimum::getObjectLabel() {
-  return "min";
-}
+inline const char *MessageMinimum::getObjectLabel() { return "min"; }
 
 inline std::string MessageMinimum::toString() {
-  return MessageMinimum::getObjectLabel();
+    return MessageMinimum::getObjectLabel();
 }
 
 #endif // _MESSAGE_MINIMUM_H_

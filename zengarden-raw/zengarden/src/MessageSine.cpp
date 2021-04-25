@@ -23,21 +23,23 @@
 #include "MessageSine.h"
 
 MessageObject *MessageSine::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageSine(initMessage, graph);
+    return new MessageSine(initMessage, graph);
 }
 
-MessageSine::MessageSine(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessageSine::MessageSine(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessageSine::~MessageSine() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageSine::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), sinf(message->getFloat(0)));
-    sendMessage(0, outgoingMessage);
-  }
+    if (message->isFloat(0)) {
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                   sinf(message->getFloat(0)));
+        sendMessage(0, outgoingMessage);
+    }
 }

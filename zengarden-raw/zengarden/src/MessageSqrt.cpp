@@ -23,22 +23,24 @@
 #include "MessageSqrt.h"
 
 MessageObject *MessageSqrt::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageSqrt(initMessage, graph);
+    return new MessageSqrt(initMessage, graph);
 }
 
-MessageSqrt::MessageSqrt(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessageSqrt::MessageSqrt(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessageSqrt::~MessageSqrt() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageSqrt::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-    float value = message->getFloat(0);
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), (value < 0.0f) ? 0.0f : sqrtf(value));
-    sendMessage(0, outgoingMessage);
-  }
+    if (message->isFloat(0)) {
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        float value = message->getFloat(0);
+        outgoingMessage->initWithTimestampAndFloat(
+            message->getTimestamp(), (value < 0.0f) ? 0.0f : sqrtf(value));
+        sendMessage(0, outgoingMessage);
+    }
 }

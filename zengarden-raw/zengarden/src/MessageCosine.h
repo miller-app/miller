@@ -40,12 +40,10 @@ class MessageCosine : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageCosine::getObjectLabel() {
-  return "cos";
-}
+inline const char *MessageCosine::getObjectLabel() { return "cos"; }
 
 inline std::string MessageCosine::toString() {
-  return MessageCosine::getObjectLabel();
+    return MessageCosine::getObjectLabel();
 }
 
 #endif // _MESSAGE_COSINE_H_

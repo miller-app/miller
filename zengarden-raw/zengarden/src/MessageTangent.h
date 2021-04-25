@@ -40,12 +40,10 @@ class MessageTangent : public MessageObject {
     void processMessage(int inletIndex, PdMessage *message);
 };
 
-inline const char *MessageTangent::getObjectLabel() {
-  return "tan";
-}
+inline const char *MessageTangent::getObjectLabel() { return "tan"; }
 
 inline std::string MessageTangent::toString() {
-  return MessageTangent::getObjectLabel();
+    return MessageTangent::getObjectLabel();
 }
 
 #endif // _MESSAGE_TANGENT_H_

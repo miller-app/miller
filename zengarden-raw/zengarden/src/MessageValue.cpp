@@ -2,7 +2,7 @@
  *  Copyright 2010,2011,2012 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -24,34 +24,35 @@
 #include "PdGraph.h"
 
 MessageObject *MessageValue::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageValue(initMessage, graph);
+    return new MessageValue(initMessage, graph);
 }
 
-MessageValue::MessageValue(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  if (initMessage->isSymbol(0)) {
-    name = StaticUtils::copyString(initMessage->getSymbol(0));
-  } else {
-    name = NULL;
-    graph->printErr("Object \"value\" MUST be initialised with a name.");
-  }
+MessageValue::MessageValue(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    if (initMessage->isSymbol(0)) {
+        name = StaticUtils::copyString(initMessage->getSymbol(0));
+    } else {
+        name = NULL;
+        graph->printErr("Object \"value\" MUST be initialised with a name.");
+    }
 }
 
-MessageValue::~MessageValue() {
-  free(name);
-}
+MessageValue::~MessageValue() { free(name); }
 
 void MessageValue::processMessage(int inletIndex, PdMessage *message) {
-  switch (message->getType(0)) {
+    switch (message->getType(0)) {
     case FLOAT: {
-      graph->setValueForName(name, message->getFloat(0));
-      break;
+        graph->setValueForName(name, message->getFloat(0));
+        break;
     }
     case BANG: {
-      PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-      outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), graph->getValueForName(name));
-      sendMessage(0, outgoingMessage);
-      break;
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        outgoingMessage->initWithTimestampAndFloat(
+            message->getTimestamp(), graph->getValueForName(name));
+        sendMessage(0, outgoingMessage);
+        break;
     }
-    default: break;
-  }
+    default:
+        break;
+    }
 }

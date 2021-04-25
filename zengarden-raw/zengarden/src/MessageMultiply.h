@@ -43,8 +43,6 @@ class MessageMultiply : public MessageObject {
     float last;
 };
 
-inline const char *MessageMultiply::getObjectLabel() {
-  return "*";
-}
+inline const char *MessageMultiply::getObjectLabel() { return "*"; }
 
 #endif // _MESSAGE_MULTIPLY_H_

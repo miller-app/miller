@@ -27,27 +27,27 @@
 
 /** [makefilename], [makefilename symbol] */
 class MessageMakefilename : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageMakefilename(PdMessage *initMessage, PdGraph *graph);
     ~MessageMakefilename();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
-    
+
     char *format;
 };
 
 inline const char *MessageMakefilename::getObjectLabel() {
-  return "makefilename";
+    return "makefilename";
 }
 
 inline std::string MessageMakefilename::toString() {
-  return MessageMakefilename::getObjectLabel();
+    return MessageMakefilename::getObjectLabel();
 }
 
 #endif // _MESSAGE_MAKEFILENAME_H_

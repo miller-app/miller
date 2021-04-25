@@ -43,12 +43,10 @@ class MessageMaximum : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageMaximum::getObjectLabel() {
-  return "max";
-}
+inline const char *MessageMaximum::getObjectLabel() { return "max"; }
 
 inline std::string MessageMaximum::toString() {
-  return MessageMaximum::getObjectLabel();
+    return MessageMaximum::getObjectLabel();
 }
 
 #endif // _MESSAGE_MAXIMUM_H_

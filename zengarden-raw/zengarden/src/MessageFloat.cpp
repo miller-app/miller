@@ -2,7 +2,7 @@
  *  Copyright 2009,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -23,41 +23,45 @@
 #include "MessageFloat.h"
 
 MessageObject *MessageFloat::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageFloat(initMessage, graph);
+    return new MessageFloat(initMessage, graph);
 }
 
-MessageFloat::MessageFloat(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageFloat::MessageFloat(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageFloat::~MessageFloat() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageFloat::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          constant = message->getFloat(0);
-          // allow fallthrough
+            constant = message->getFloat(0);
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), constant);
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       constant);
+            sendMessage(0, outgoingMessage);
+            break;
         }
-        default: break;
-      }
-      break;
+        default:
+            break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
-    default: break;
-  }  
+    default:
+        break;
+    }
 }

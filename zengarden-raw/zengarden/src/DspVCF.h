@@ -2,7 +2,7 @@
  *  Copyright 2009,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,22 +27,22 @@
 
 /** [vcf~], a voltage controlled bandpass filter */
 class DspVCF : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspVCF(PdMessage *initMessage, PdGraph *graph);
     ~DspVCF();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     void processDspWithIndex(int fromIndex, int toIndex);
-  
+
     void calculateFilterCoefficients(float f, float q);
     float sigbp_qcos(float f); // not entirely sure what this is doing. From Pd.
-    
+
     float sampleRate;
     float centerFrequency;
     float q;
@@ -53,8 +53,6 @@ class DspVCF : public DspObject {
     float tap_1;
 };
 
-inline std::string DspVCF::toString() {
-  return DspVCF::getObjectLabel();
-}
+inline std::string DspVCF::toString() { return DspVCF::getObjectLabel(); }
 
 #endif // _DSP_VCF_H_

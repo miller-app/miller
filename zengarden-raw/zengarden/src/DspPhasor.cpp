@@ -27,192 +27,219 @@
 #define SHORT_TO_FLOAT_RATIO 0.0000152590219f // == 1/(2^16 - 1)
 
 MessageObject *DspPhasor::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspPhasor(initMessage, graph);
+    return new DspPhasor(initMessage, graph);
 }
 
-DspPhasor::DspPhasor(PdMessage *initMessage, PdGraph *graph) : DspObject(2, 2, 0, 1, graph) {
-  PdMessage *message = PD_MESSAGE_ON_STACK(1);
-  message->initWithTimestampAndFloat(0.0, initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f);
-  processMessage(0, message);
+DspPhasor::DspPhasor(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(2, 2, 0, 1, graph) {
+    PdMessage *message = PD_MESSAGE_ON_STACK(1);
+    message->initWithTimestampAndFloat(
+        0.0, initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f);
+    processMessage(0, message);
 
-  processFunction = &processScalar;
-  processFunctionNoMessage = &processScalar;
+    processFunction = &processScalar;
+    processFunctionNoMessage = &processScalar;
 
 #ifndef __SSE3__
-  offset = 0.0f;
-  inc = 440.0f / graph->getSampleRate();
+    offset = 0.0f;
+    inc = 440.0f / graph->getSampleRate();
 #endif
 }
 
 DspPhasor::~DspPhasor() {
-  // TODO
+    // TODO
 }
 
 string DspPhasor::toString() {
-  char str[snprintf(NULL, 0, "%s %g", getObjectLabel(), frequency)+1];
-  snprintf(str, sizeof(str), "%s %g", getObjectLabel(), frequency);
-  return string(str);
+    char str[snprintf(NULL, 0, "%s %g", getObjectLabel(), frequency) + 1];
+    snprintf(str, sizeof(str), "%s %g", getObjectLabel(), frequency);
+    return string(str);
 }
 
 void DspPhasor::onInletConnectionUpdate(unsigned int inletIndex) {
-  processFunction = incomingDspConnections[0].empty() ? &processScalar : &processSignal;
+    processFunction =
+        incomingDspConnections[0].empty() ? &processScalar : &processSignal;
 }
 
 void DspPhasor::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: { // update the frequency
-      if (message->isFloat(0)) {
-        frequency = message->getFloat(0);
-        #if __SSE3__
-        float sampleStep = frequency * 65536.0f / graph->getSampleRate();
-        short s = (short) sampleStep; // signed as step size may be negative as well!
-        inc = _mm_set1_pi16(4*s);
-        #else
-        inc = frequency / graph->getSampleRate();
-        #endif // __SSE3__
-      }
-      break;
+        if (message->isFloat(0)) {
+            frequency = message->getFloat(0);
+#if __SSE3__
+            float sampleStep = frequency * 65536.0f / graph->getSampleRate();
+            short s = (short)
+                sampleStep; // signed as step size may be negative as well!
+            inc = _mm_set1_pi16(4 * s);
+#else
+            inc = frequency / graph->getSampleRate();
+#endif // __SSE3__
+        }
+        break;
     }
     case 1: { // update the phase
-      // TODO(mhroth)
-      break;
+        // TODO(mhroth)
+        break;
     }
-    default: break;
-  }
+    default:
+        break;
+    }
 }
 
 // NOTE(mhroth): it is assumed that the block size (toIndex) is a multiple of 4
 void DspPhasor::processSignal(DspObject *dspObject, int fromIndex, int n4) {
-  DspPhasor *d = reinterpret_cast<DspPhasor *>(dspObject);
-  #if __SSE3__
-  float *input = d->dspBufferAtInlet[0];
-  float *output = d->dspBufferAtOutlet[0];
-  __m64 indicies = d->indicies;
-  static __m128 constVec = _mm_set1_ps(SHORT_TO_FLOAT_RATIO);
-  static __m128 sampVec = _mm_set1_ps(65536.0f/d->graph->getSampleRate());
+    DspPhasor *d = reinterpret_cast<DspPhasor *>(dspObject);
+#if __SSE3__
+    float *input = d->dspBufferAtInlet[0];
+    float *output = d->dspBufferAtOutlet[0];
+    __m64 indicies = d->indicies;
+    static __m128 constVec = _mm_set1_ps(SHORT_TO_FLOAT_RATIO);
+    static __m128 sampVec = _mm_set1_ps(65536.0f / d->graph->getSampleRate());
 
-  while (n4) {
-    // convert signal input to sample increments
-    // (short) (input * (65536.0f/d->graph->getSampleRate()))
-    __m64 inc = _mm_cvtps_pi16(_mm_mul_ps(_mm_load_ps(input),sampVec));
-    
-    // cumulative summation of increments
-    inc = _mm_add_pi16(_mm_add_pi16(_mm_add_pi16(inc,_mm_slli_si64(inc,16)),
-        _mm_slli_si64(inc,32)),_mm_slli_si64(inc,48));
-    
-    // add increments to index
-    indicies = _mm_add_pi16(_mm_set1_pi16(_mm_extract_pi16(indicies,3)), inc);
-    
-    _mm_store_ps(output,_mm_mul_ps(_mm_cvtpu16_ps(indicies),constVec));
-    input += 4;
-    output += 4;
-    n4 -= 4;
-  }
-  
-  d->indicies = indicies;
-  
-  #else
-  float inc = d->inc;
-  float offset = d->offset;
-  float *input = d->dspBufferAtInlet[0];
-  float *output = d->dspBufferAtOutlet[0];
-  float sampleRate = d->graph->getSampleRate();
+    while (n4) {
+        // convert signal input to sample increments
+        // (short) (input * (65536.0f/d->graph->getSampleRate()))
+        __m64 inc = _mm_cvtps_pi16(_mm_mul_ps(_mm_load_ps(input), sampVec));
 
-  for (int i = fromIndex; i < n4; i++) {
-    inc = input[i] / sampleRate;
-    output[i] = offset;
-    offset += inc;
-    offset -= (long)offset; // Get fractional part
-  }
+        // cumulative summation of increments
+        inc =
+            _mm_add_pi16(_mm_add_pi16(_mm_add_pi16(inc, _mm_slli_si64(inc, 16)),
+                                      _mm_slli_si64(inc, 32)),
+                         _mm_slli_si64(inc, 48));
 
-  // We may get garbage data for a frame, don't let that ruin our internal
-  // state
-  if (isnan(inc)) {
-    inc = 440.0f / d->graph->getSampleRate();
-  }
+        // add increments to index
+        indicies =
+            _mm_add_pi16(_mm_set1_pi16(_mm_extract_pi16(indicies, 3)), inc);
 
-  if (isnan(offset)) {
-    offset = 0.0f;
-  }
+        _mm_store_ps(output, _mm_mul_ps(_mm_cvtpu16_ps(indicies), constVec));
+        input += 4;
+        output += 4;
+        n4 -= 4;
+    }
 
-  d->inc = inc;
-  d->offset = offset;
-  #endif
+    d->indicies = indicies;
+
+#else
+    float inc = d->inc;
+    float offset = d->offset;
+    float *input = d->dspBufferAtInlet[0];
+    float *output = d->dspBufferAtOutlet[0];
+    float sampleRate = d->graph->getSampleRate();
+
+    for (int i = fromIndex; i < n4; i++) {
+        inc = input[i] / sampleRate;
+        output[i] = offset;
+        offset += inc;
+        offset -= (long)offset; // Get fractional part
+    }
+
+    // We may get garbage data for a frame, don't let that ruin our internal
+    // state
+    if (isnan(inc)) {
+        inc = 440.0f / d->graph->getSampleRate();
+    }
+
+    if (isnan(offset)) {
+        offset = 0.0f;
+    }
+
+    d->inc = inc;
+    d->offset = offset;
+#endif
 }
 
 // http://cache-www.intel.com/cd/00/00/34/76/347603_347603.pdf
-void DspPhasor::processScalar(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspPhasor *d = reinterpret_cast<DspPhasor *>(dspObject);
-  #if __SSE3__
-  /*
-   * Creates an array of unsigned short indicies (since the length of the cosine lookup table is
-   * of length 2^16. These indicies are incremented by a step size based on the desired frequency.
-   * As the indicies overflow during addition, they loop back around to zero.
-   */
-  int n = toIndex - fromIndex;
-  float *output = d->dspBufferAtOutlet[0]+fromIndex;
-  __m64 inc = d->inc;
-  short s = _mm_extract_pi16(inc,0) >> 2; // == / 4 in order to recover original step size
-  static __m128 constVec = _mm_set1_ps(SHORT_TO_FLOAT_RATIO);
-  unsigned short idx;
-  
-  // ensure that input and output vectors are 16-byte aligned
-  __m64 indicies;
-  switch (fromIndex & 0x3) {
-    case 1: {
-      idx = _mm_extract_pi16(d->indicies,0); // get current index
-      *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s; --n;
-    }
-    case 2: *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s; --n;
-    case 3: {
-      *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s; --n;
-      indicies = _mm_set_pi16(idx+3*s, idx+2*s, idx+s, idx);
-      break;
-    }
-    default: indicies = d->indicies; break;
-  }
-  
-  // compute as many 4-tuples as possible
-  int n4 = n & 0xFFFFFFFC; // we can process 4 indicies at a time
-  while (n4) {
-    // output = ((float) indicies) * (1/(2^16-1))
-    _mm_store_ps(output, _mm_mul_ps(_mm_cvtpu16_ps(indicies),constVec));
-    indicies = _mm_add_pi16(indicies, inc);
-    output += 4;
-    n4 -= 4;
-  }
-  
-  // finish the remaining (up to 3) samples
-  switch (n & 0x3) {
-    case 3: {
-      idx = _mm_extract_pi16(d->indicies,3);
-      *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s;
-    }
-    case 2: *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s;
-    case 1: {
-      *output++ = ((float) idx) * SHORT_TO_FLOAT_RATIO; idx += s;
-      d->indicies = _mm_set_pi16(idx+3*s, idx+2*s, idx+s, idx);
-      break;
-    }
-    default: d->indicies = indicies; break;
-    // set the current index to the correct location, given that the step size is actually
-    // a real number, not an integer
-    // NOTE(mhroth): but doing this will cause clicks :-/ Osc will thus go out of phase over time
-    // Will anyone complain?
-    //      d->currentIndex = currentIndex + ((short) ((d->sampleStep - floorf(d->sampleStep)) * n));
-  }
-  #else
-  float inc = d->inc;
-  float offset = d->offset;
-  float *output = d->dspBufferAtOutlet[0];
-  float sampleRate = d->graph->getSampleRate();
+void DspPhasor::processScalar(DspObject *dspObject, int fromIndex,
+                              int toIndex) {
+    DspPhasor *d = reinterpret_cast<DspPhasor *>(dspObject);
+#if __SSE3__
+    /*
+     * Creates an array of unsigned short indicies (since the length of the
+     * cosine lookup table is of length 2^16. These indicies are incremented by
+     * a step size based on the desired frequency. As the indicies overflow
+     * during addition, they loop back around to zero.
+     */
+    int n = toIndex - fromIndex;
+    float *output = d->dspBufferAtOutlet[0] + fromIndex;
+    __m64 inc = d->inc;
+    short s = _mm_extract_pi16(inc, 0) >>
+              2; // == / 4 in order to recover original step size
+    static __m128 constVec = _mm_set1_ps(SHORT_TO_FLOAT_RATIO);
+    unsigned short idx;
 
-  for (int i = fromIndex; i < toIndex; i++) {
-    output[i] = offset;
-    offset += inc;
-    offset -= (long)offset; // Get fractional part
-  }
+    // ensure that input and output vectors are 16-byte aligned
+    __m64 indicies;
+    switch (fromIndex & 0x3) {
+    case 1: {
+        idx = _mm_extract_pi16(d->indicies, 0); // get current index
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+        --n;
+    }
+    case 2:
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+        --n;
+    case 3: {
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+        --n;
+        indicies = _mm_set_pi16(idx + 3 * s, idx + 2 * s, idx + s, idx);
+        break;
+    }
+    default:
+        indicies = d->indicies;
+        break;
+    }
 
-  d->offset = offset;
-  #endif
+    // compute as many 4-tuples as possible
+    int n4 = n & 0xFFFFFFFC; // we can process 4 indicies at a time
+    while (n4) {
+        // output = ((float) indicies) * (1/(2^16-1))
+        _mm_store_ps(output, _mm_mul_ps(_mm_cvtpu16_ps(indicies), constVec));
+        indicies = _mm_add_pi16(indicies, inc);
+        output += 4;
+        n4 -= 4;
+    }
+
+    // finish the remaining (up to 3) samples
+    switch (n & 0x3) {
+    case 3: {
+        idx = _mm_extract_pi16(d->indicies, 3);
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+    }
+    case 2:
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+    case 1: {
+        *output++ = ((float)idx) * SHORT_TO_FLOAT_RATIO;
+        idx += s;
+        d->indicies = _mm_set_pi16(idx + 3 * s, idx + 2 * s, idx + s, idx);
+        break;
+    }
+    default:
+        d->indicies = indicies;
+        break;
+        // set the current index to the correct location, given that the step
+        // size is actually a real number, not an integer NOTE(mhroth): but
+        // doing this will cause clicks :-/ Osc will thus go out of phase over
+        // time Will anyone complain?
+        //      d->currentIndex = currentIndex + ((short) ((d->sampleStep -
+        //      floorf(d->sampleStep)) * n));
+    }
+#else
+    float inc = d->inc;
+    float offset = d->offset;
+    float *output = d->dspBufferAtOutlet[0];
+    float sampleRate = d->graph->getSampleRate();
+
+    for (int i = fromIndex; i < toIndex; i++) {
+        output[i] = offset;
+        offset += inc;
+        offset -= (long)offset; // Get fractional part
+    }
+
+    d->offset = offset;
+#endif
 }

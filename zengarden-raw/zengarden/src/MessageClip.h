@@ -44,12 +44,10 @@ class MessageClip : public MessageObject {
     float upperBound;
 };
 
-inline const char *MessageClip::getObjectLabel() {
-  return "clip";
-}
+inline const char *MessageClip::getObjectLabel() { return "clip"; }
 
 inline std::string MessageClip::toString() {
-  return MessageClip::getObjectLabel();
+    return MessageClip::getObjectLabel();
 }
 
 #endif // _MESSAGE_CLIP_H_

@@ -22,34 +22,36 @@
 
 #include "MessageSpigot.h"
 
-MessageObject *MessageSpigot::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageSpigot(initMessage, graph);
+MessageObject *MessageSpigot::newObject(PdMessage *initMessage,
+                                        PdGraph *graph) {
+    return new MessageSpigot(initMessage, graph);
 }
 
-MessageSpigot::MessageSpigot(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageSpigot::MessageSpigot(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageSpigot::~MessageSpigot() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageSpigot::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (constant != 0.0f) {
-        sendMessage(0, message); // if the spigot is on, pass on the message
-      }
-      break;
+        if (constant != 0.0f) {
+            sendMessage(0, message); // if the spigot is on, pass on the message
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

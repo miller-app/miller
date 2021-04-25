@@ -43,12 +43,10 @@ class MessageEqualsEquals : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageEqualsEquals::getObjectLabel() {
-  return "==";
-}
+inline const char *MessageEqualsEquals::getObjectLabel() { return "=="; }
 
 inline std::string MessageEqualsEquals::toString() {
-  return MessageEqualsEquals::getObjectLabel();
+    return MessageEqualsEquals::getObjectLabel();
 }
 
 #endif // _MESSAGE_EQUALSEQUALS_H_

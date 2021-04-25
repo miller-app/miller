@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -25,35 +25,35 @@
 
 /** An enumeration all supported objects. */
 enum ObjectType {
-  DSP_ADC,
-  DSP_ADD,
-  DSP_BANDPASS_FILTER,
-  DSP_CATCH,
-  DSP_CLIP,
-  DSP_COSINE,
-  DSP_DAC,
-  DSP_TABLE_PLAY,
-  DSP_DELAY_READ,
-  DSP_DELAY_WRITE,
-  DSP_INLET,
-  DSP_OUTLET,
-  DSP_RECEIVE,
-  DSP_SEND,
-  DSP_TABLE_READ,
-  DSP_TABLE_READ4,
-  DSP_TABLE_WRITE,
-  DSP_THROW,
-  DSP_VARIABLE_DELAY,
-  MESSAGE_INLET,
-  MESSAGE_NOTEIN,
-  MESSAGE_OUTLET,
-  MESSAGE_RECEIVE,
-  MESSAGE_SEND,
-  MESSAGE_TABLE,
-  MESSAGE_TABLE_READ,
-  MESSAGE_TABLE_WRITE,
-  OBJECT_PD,
-  OBJECT_UNKNOWN // unknown or unimportant
+    DSP_ADC,
+    DSP_ADD,
+    DSP_BANDPASS_FILTER,
+    DSP_CATCH,
+    DSP_CLIP,
+    DSP_COSINE,
+    DSP_DAC,
+    DSP_TABLE_PLAY,
+    DSP_DELAY_READ,
+    DSP_DELAY_WRITE,
+    DSP_INLET,
+    DSP_OUTLET,
+    DSP_RECEIVE,
+    DSP_SEND,
+    DSP_TABLE_READ,
+    DSP_TABLE_READ4,
+    DSP_TABLE_WRITE,
+    DSP_THROW,
+    DSP_VARIABLE_DELAY,
+    MESSAGE_INLET,
+    MESSAGE_NOTEIN,
+    MESSAGE_OUTLET,
+    MESSAGE_RECEIVE,
+    MESSAGE_SEND,
+    MESSAGE_TABLE,
+    MESSAGE_TABLE_READ,
+    MESSAGE_TABLE_WRITE,
+    OBJECT_PD,
+    OBJECT_UNKNOWN // unknown or unimportant
 };
 
 #endif // _OBJECT_TYPE_H_

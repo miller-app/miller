@@ -43,12 +43,10 @@ class MessageSwap : public MessageObject {
     float right;
 };
 
-inline const char *MessageSwap::getObjectLabel() {
-  return "swap";
-}
+inline const char *MessageSwap::getObjectLabel() { return "swap"; }
 
 inline std::string MessageSwap::toString() {
-  return MessageSwap::getObjectLabel();
+    return MessageSwap::getObjectLabel();
 }
 
 #endif // _MESSAGE_SWAP_H_

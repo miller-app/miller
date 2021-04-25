@@ -2,7 +2,7 @@
  *  Copyright 2009,2011,2012 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -24,17 +24,18 @@
 #include "PdGraph.h"
 
 MessageObject *DspAdc::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspAdc(graph);
+    return new DspAdc(graph);
 }
 
-DspAdc::DspAdc(PdGraph *graph) : DspObject(0, 0, 0, graph->getNumInputChannels(), graph) {
-  // nothing to do
+DspAdc::DspAdc(PdGraph *graph)
+    : DspObject(0, 0, 0, graph->getNumInputChannels(), graph) {
+    // nothing to do
 }
 
 DspAdc::~DspAdc() {
-  // nothing to do
+    // nothing to do
 }
 
 float *DspAdc::getDspBufferAtOutlet(int outletIndex) {
-  return graph->getGlobalDspBufferAtInlet(outletIndex);
+    return graph->getGlobalDspBufferAtInlet(outletIndex);
 }

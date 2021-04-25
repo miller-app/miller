@@ -27,38 +27,32 @@
 
 /** [send~ symbol], [s~ symbol] */
 class DspSend : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspSend(PdMessage *initMessage, PdGraph *graph);
     ~DspSend();
-    
+
     const char *getName();
     static const char *getObjectLabel();
     std::string toString();
-  
+
     ObjectType getObjectType();
-    
+
   private:
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
-  
+
     char *name;
 };
 
 inline std::string DspSend::toString() {
-  return string(DspSend::getObjectLabel()) + " " + string(name);
+    return string(DspSend::getObjectLabel()) + " " + string(name);
 }
 
-inline const char *DspSend::getName() {
-  return name;
-}
+inline const char *DspSend::getName() { return name; }
 
-inline const char *DspSend::getObjectLabel() {
-  return "send~";
-}
+inline const char *DspSend::getObjectLabel() { return "send~"; }
 
-inline ObjectType DspSend::getObjectType() {
-  return DSP_SEND;
-}
+inline ObjectType DspSend::getObjectType() { return DSP_SEND; }
 
 #endif // _DSP_SEND_H_

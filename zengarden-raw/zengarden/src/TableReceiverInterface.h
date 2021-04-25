@@ -27,15 +27,17 @@
 
 /**
  * This class has a similar function to DelayReceiver in that it is an interface
- * for all objects which interact with MessageTables. This includes DspTableRead, DspTablePlay,
- * DspTableRead4, MessageTableRead, and MessageTableWrite.
+ * for all objects which interact with MessageTables. This includes
+ * DspTableRead, DspTablePlay, DspTableRead4, MessageTableRead, and
+ * MessageTableWrite.
  */
 class TableReceiverInterface {
   public:
-    virtual ~TableReceiverInterface() { /* nothing to do */ }
+    virtual ~TableReceiverInterface() { /* nothing to do */
+    }
 
     virtual char *getName() = 0;
-  
+
     virtual void setTable(MessageTable *table) = 0;
 };
 

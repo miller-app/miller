@@ -22,36 +22,40 @@
 
 #include "MessageArcTangent2.h"
 
-MessageObject *MessageArcTangent2::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageArcTangent2(initMessage, graph);
+MessageObject *MessageArcTangent2::newObject(PdMessage *initMessage,
+                                             PdGraph *graph) {
+    return new MessageArcTangent2(initMessage, graph);
 }
 
-MessageArcTangent2::MessageArcTangent2(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+MessageArcTangent2::MessageArcTangent2(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
 }
 
 MessageArcTangent2::~MessageArcTangent2() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageArcTangent2::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      if (message->isFloat(0)) {
-        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), atan2f(message->getFloat(0), constant));
-        sendMessage(0, outgoingMessage);
-      }
-      break;
+        if (message->isFloat(0)) {
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(
+                message->getTimestamp(),
+                atan2f(message->getFloat(0), constant));
+            sendMessage(0, outgoingMessage);
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }

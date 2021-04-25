@@ -22,45 +22,49 @@
 
 #include "MessageRandom.h"
 
-MessageObject *MessageRandom::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageRandom(initMessage, graph);
+MessageObject *MessageRandom::newObject(PdMessage *initMessage,
+                                        PdGraph *graph) {
+    return new MessageRandom(initMessage, graph);
 }
 
-MessageRandom::MessageRandom(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  max_inc = initMessage->isFloat(0) ? ((int) initMessage->getFloat(0))-1 : 1;
-  twister = new MTRand();
+MessageRandom::MessageRandom(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    max_inc = initMessage->isFloat(0) ? ((int)initMessage->getFloat(0)) - 1 : 1;
+    twister = new MTRand();
 }
 
-MessageRandom::~MessageRandom() {
-  delete twister;
-}
+MessageRandom::~MessageRandom() { delete twister; }
 
 void MessageRandom::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case SYMBOL: {
-          if (message->isSymbol(0, "seed") && message->isFloat(1)) {
-            twister->seed((int) message->getFloat(1)); // reset the seed
-          }
-          break;
+            if (message->isSymbol(0, "seed") && message->isFloat(1)) {
+                twister->seed((int)message->getFloat(1)); // reset the seed
+            }
+            break;
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), (float) twister->randInt(max_inc));
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(
+                message->getTimestamp(), (float)twister->randInt(max_inc));
+            sendMessage(0, outgoingMessage);
+            break;
         }
-        default: break;
-      }
-      break;
+        default:
+            break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        max_inc = static_cast<int>(fmaxf(message->getFloat(0) - 1.0f, 0.0f));
-      }
-      break;
+        if (message->isFloat(0)) {
+            max_inc =
+                static_cast<int>(fmaxf(message->getFloat(0) - 1.0f, 0.0f));
+        }
+        break;
     }
-    default: break; // ERROR!
-  }
+    default:
+        break; // ERROR!
+    }
 }

@@ -28,32 +28,26 @@
 
 /** [rifft~] */
 class DspRifft : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspRifft(PdMessage *initMessage, PdGraph *graph);
     ~DspRifft();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processDspWithIndex(int fromIndex, int toIndex);
-    
-    #if __APPLE__
+
+#if __APPLE__
     vDSP_Length log2n;
     FFTSetup fftSetup;
-    #endif // __APPLE__
-  
+#endif // __APPLE__
 };
 
-inline std::string DspRifft::toString() {
-  return DspRifft::getObjectLabel();
-}
+inline std::string DspRifft::toString() { return DspRifft::getObjectLabel(); }
 
-inline const char *DspRifft::getObjectLabel() {
-  return "rifft~";
-}
-
+inline const char *DspRifft::getObjectLabel() { return "rifft~"; }
 
 #endif // _DSP_RIFFT_H_

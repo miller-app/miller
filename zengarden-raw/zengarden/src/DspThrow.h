@@ -32,26 +32,26 @@ class DspCatch;
  * Implements the sending end of a many-to-one audio connection.
  */
 class DspThrow : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspThrow(PdMessage *initMessage, PdGraph *graph);
     ~DspThrow();
-    
+
     float *getBuffer() { return buffer; }
-  
+
     const char *getName() { return name; }
     static const char *getObjectLabel() { return "throw~"; }
     string toString() { return string(getObjectLabel()) + " " + string(name); }
     ObjectType getObjectType() { return DSP_THROW; }
 
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     bool isLeafNode();
-    
+
   private:
     static void processSignal(DspObject *dspObject, int fromIndex, int toIndex);
-  
+
     char *name;
     float *buffer;
 };

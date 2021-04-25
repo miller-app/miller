@@ -42,12 +42,10 @@ class MessageArcTangent2 : public MessageObject {
     float constant;
 };
 
-inline const char *MessageArcTangent2::getObjectLabel() {
-  return "atan2";
-}
+inline const char *MessageArcTangent2::getObjectLabel() { return "atan2"; }
 
 inline std::string MessageArcTangent2::toString() {
-  return MessageArcTangent2::getObjectLabel();
+    return MessageArcTangent2::getObjectLabel();
 }
 
 #endif // _MESSAGE_ARCTANGENT2_H_

@@ -45,9 +45,6 @@ class MessageGreaterThan : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageGreaterThan::getObjectLabel() {
-  return ">";
-}
-
+inline const char *MessageGreaterThan::getObjectLabel() { return ">"; }
 
 #endif // _MESSAGE_GREATERTHAN_H_

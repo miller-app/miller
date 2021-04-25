@@ -2,7 +2,7 @@
  *  Copyright 2009,2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -32,33 +32,31 @@ class DspDelayWrite;
  * This object implements the <code>DelayReceiver</code> interface.
  */
 class DspVariableDelay : public DelayReceiver {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspVariableDelay(PdMessage *initMessage, PdGraph *graph);
     ~DspVariableDelay();
-  
+
     static const char *getObjectLabel();
     std::string toString();
-  
+
     ObjectType getObjectType();
-    
+
   private:
     void processDspWithIndex(int fromIndex, int toIndex);
-  
+
     float sampleRate;
 };
 
 inline std::string DspVariableDelay::toString() {
-  return std::string(DspVariableDelay::getObjectLabel()) + " " + name;
+    return std::string(DspVariableDelay::getObjectLabel()) + " " + name;
 }
 
-inline const char *DspVariableDelay::getObjectLabel() {
-  return "vd~";
-}
-  
+inline const char *DspVariableDelay::getObjectLabel() { return "vd~"; }
+
 inline ObjectType DspVariableDelay::getObjectType() {
-  return DSP_VARIABLE_DELAY;
+    return DSP_VARIABLE_DELAY;
 }
 
 #endif // _DSP_VARIABLE_DELAY_H_

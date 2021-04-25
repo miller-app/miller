@@ -43,8 +43,6 @@ class MessageSubtract : public MessageObject {
     float last;
 };
 
-inline const char *MessageSubtract::getObjectLabel() {
-  return "-";
-}
+inline const char *MessageSubtract::getObjectLabel() { return "-"; }
 
 #endif // _MESSAGE_SUBTRACT_H_

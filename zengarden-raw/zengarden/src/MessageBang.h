@@ -41,11 +41,9 @@ class MessageBang : public MessageObject {
 };
 
 inline std::string MessageBang::toString() {
-  return MessageBang::getObjectLabel();
+    return MessageBang::getObjectLabel();
 }
 
-inline const char *MessageBang::getObjectLabel() {
-  return "bang";
-}
+inline const char *MessageBang::getObjectLabel() { return "bang"; }
 
 #endif // _MESSAGE_BANG_H_

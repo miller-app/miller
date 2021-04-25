@@ -22,24 +22,27 @@
 
 #include "MessageRmsToDb.h"
 
-MessageObject *MessageRmsToDb::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageRmsToDb(initMessage, graph);
+MessageObject *MessageRmsToDb::newObject(PdMessage *initMessage,
+                                         PdGraph *graph) {
+    return new MessageRmsToDb(initMessage, graph);
 }
 
-MessageRmsToDb::MessageRmsToDb(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessageRmsToDb::MessageRmsToDb(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessageRmsToDb::~MessageRmsToDb() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageRmsToDb::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-    float f = message->getFloat(0);
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
-        (f <= 0.0f) ? 0.0f : 20.0f * log10f(f * 100000.0f));
-    sendMessage(0, outgoingMessage); // send a message from outlet 0
-  }
+    if (message->isFloat(0)) {
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        float f = message->getFloat(0);
+        outgoingMessage->initWithTimestampAndFloat(
+            message->getTimestamp(),
+            (f <= 0.0f) ? 0.0f : 20.0f * log10f(f * 100000.0f));
+        sendMessage(0, outgoingMessage); // send a message from outlet 0
+    }
 }

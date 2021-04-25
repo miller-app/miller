@@ -43,8 +43,6 @@ class MessageDivide : public MessageObject {
     float last;
 };
 
-inline const char *MessageDivide::getObjectLabel() {
-  return "/";
-}
+inline const char *MessageDivide::getObjectLabel() { return "/"; }
 
 #endif // _MESSAGE_DIVIDE_H_

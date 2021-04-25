@@ -2,7 +2,7 @@
  *  Copyright 2011,2012 ZenGarden.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -27,16 +27,16 @@
 
 /** The superclass of lop~, hip~, bp~, and biquad~ */
 class DspFilter : public DspObject {
-  
+
   public:
     DspFilter(int numMessageInlets, PdGraph *graph);
     ~DspFilter();
 
     void onInletConnectionUpdate(unsigned int inletIndex);
-  
-  protected:  
+
+  protected:
     static void processFilter(DspObject *dspObject, int fromIndex, int toIndex);
-    
+
     float x1, x2, y1, y2;
     float b[5]; // filter coefficients
 };

@@ -20,8 +20,8 @@
  *
  */
 
-#include "ArrayArithmetic.h"
 #include "DspCosine.h"
+#include "ArrayArithmetic.h"
 #include "PdGraph.h"
 
 // initialise the static class variables
@@ -29,49 +29,51 @@ float *DspCosine::cos_table = NULL;
 int DspCosine::refCount = 0;
 
 MessageObject *DspCosine::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new DspCosine(initMessage, graph);
+    return new DspCosine(initMessage, graph);
 }
 
-DspCosine::DspCosine(PdMessage *initMessage, PdGraph *graph) : DspObject(0, 1, 0, 1, graph) {
-  this->sampleRate = graph->getSampleRate();
-  processFunction = &procesSignal;
-  #if !__APPLE__ // only create the lookup table if it is really needed
-  refCount++;
-  if (cos_table == NULL) {
-    int sampleRateInt = (int) sampleRate;
-    cos_table = (float *) malloc((sampleRateInt + 1) * sizeof(float));
-    for (int i = 0; i < sampleRateInt; i++) {
-      cos_table[i] = cosf(2.0f * M_PI * ((float) i) / sampleRate);
+DspCosine::DspCosine(PdMessage *initMessage, PdGraph *graph)
+    : DspObject(0, 1, 0, 1, graph) {
+    this->sampleRate = graph->getSampleRate();
+    processFunction = &procesSignal;
+#if !__APPLE__ // only create the lookup table if it is really needed
+    refCount++;
+    if (cos_table == NULL) {
+        int sampleRateInt = (int)sampleRate;
+        cos_table = (float *)malloc((sampleRateInt + 1) * sizeof(float));
+        for (int i = 0; i < sampleRateInt; i++) {
+            cos_table[i] = cosf(2.0f * M_PI * ((float)i) / sampleRate);
+        }
+        cos_table[sampleRateInt] = cos_table[0];
     }
-    cos_table[sampleRateInt] = cos_table[0];
-  }
-  #endif
+#endif
 }
 
 DspCosine::~DspCosine() {
-  #if !__APPLE__
-  if (--refCount == 0) {
-    free(cos_table);
-    cos_table = NULL;
-  }
-  #endif
+#if !__APPLE__
+    if (--refCount == 0) {
+        free(cos_table);
+        cos_table = NULL;
+    }
+#endif
 }
 
 void DspCosine::procesSignal(DspObject *dspObject, int fromIndex, int toIndex) {
-  DspCosine *d = reinterpret_cast<DspCosine *>(dspObject);
-  // as no messages are received and there is only one inlet, processDsp does not need much of the
-  // infrastructure provided by DspObject
-  
-  #if __APPLE__
-  static float twoPi = 2.0f*M_PI;
-  vDSP_vsmul(d->dspBufferAtInlet[0], 1, &twoPi, d->dspBufferAtOutlet[0], 1, toIndex);
-  vvcosf(d->dspBufferAtOutlet[0], d->dspBufferAtOutlet[0], &toIndex);
-  #else
-  for (int i = fromIndex; i < toIndex; ++i) {
-    // works because cosine is symmetric about zero
-    float f = fabsf(d->dspBufferAtInlet[0][i]);
-    f -= floorf(f);
-    d->dspBufferAtOutlet[0][i] = cos_table[(int) (f * d->sampleRate)];
-  }
-  #endif
+    DspCosine *d = reinterpret_cast<DspCosine *>(dspObject);
+    // as no messages are received and there is only one inlet, processDsp does
+    // not need much of the infrastructure provided by DspObject
+
+#if __APPLE__
+    static float twoPi = 2.0f * M_PI;
+    vDSP_vsmul(d->dspBufferAtInlet[0], 1, &twoPi, d->dspBufferAtOutlet[0], 1,
+               toIndex);
+    vvcosf(d->dspBufferAtOutlet[0], d->dspBufferAtOutlet[0], &toIndex);
+#else
+    for (int i = fromIndex; i < toIndex; ++i) {
+        // works because cosine is symmetric about zero
+        float f = fabsf(d->dspBufferAtInlet[0][i]);
+        f -= floorf(f);
+        d->dspBufferAtOutlet[0][i] = cos_table[(int)(f * d->sampleRate)];
+    }
+#endif
 }

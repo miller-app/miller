@@ -27,27 +27,25 @@
 
 /** [div] */
 class MessageDiv : public MessageObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageDiv(PdMessage *initMessage, PdGraph *graph);
     ~MessageDiv();
-    
+
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     float constant; // should always be positive
 };
 
-inline const char *MessageDiv::getObjectLabel() {
-  return "div";
-}
+inline const char *MessageDiv::getObjectLabel() { return "div"; }
 
 inline std::string MessageDiv::toString() {
-  return MessageDiv::getObjectLabel();
+    return MessageDiv::getObjectLabel();
 }
 
 #endif // _MESSAGE_DIVIDE_H_

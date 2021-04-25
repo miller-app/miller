@@ -2,7 +2,7 @@
  *  Copyright 2009,2010,2011,2012 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -28,7 +28,7 @@
 /** [clip~ float float] */
 class DspClip : public DspObject {
   public:
-   static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
+    static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspClip(PdMessage *initMessage, PdGraph *graph);
     ~DspClip();
 
@@ -36,15 +36,13 @@ class DspClip : public DspObject {
     std::string toString();
 
   private:
-   static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
-   void processMessage(int inletIndex, PdMessage *message);
+    static void processScalar(DspObject *dspObject, int fromIndex, int toIndex);
+    void processMessage(int inletIndex, PdMessage *message);
 
-   float lowerBound;
-   float upperBound;
+    float lowerBound;
+    float upperBound;
 };
 
-inline const char *DspClip::getObjectLabel() {
-  return "clip~";
-}
+inline const char *DspClip::getObjectLabel() { return "clip~"; }
 
 #endif // _DSP_CLIP_H_

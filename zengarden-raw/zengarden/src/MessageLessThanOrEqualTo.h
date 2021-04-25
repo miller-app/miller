@@ -45,8 +45,6 @@ class MessageLessThanOrEqualTo : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageLessThanOrEqualTo::getObjectLabel() {
-  return "<=";
-}
+inline const char *MessageLessThanOrEqualTo::getObjectLabel() { return "<="; }
 
 #endif // _MESSAGE_LessThanOrEqualToOREQUALTO_H_

@@ -22,24 +22,27 @@
 
 #include "MessagePowToDb.h"
 
-MessageObject *MessagePowToDb::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessagePowToDb(initMessage, graph);
+MessageObject *MessagePowToDb::newObject(PdMessage *initMessage,
+                                         PdGraph *graph) {
+    return new MessagePowToDb(initMessage, graph);
 }
 
-MessagePowToDb::MessagePowToDb(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessagePowToDb::MessagePowToDb(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessagePowToDb::~MessagePowToDb() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessagePowToDb::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-    float f = message->getFloat(0);
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
-        (f <= 0.0f) ? 0.0f : 100.0f + 10.0f * log10f(f));
-    sendMessage(0, outgoingMessage);
-  }
+    if (message->isFloat(0)) {
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        float f = message->getFloat(0);
+        outgoingMessage->initWithTimestampAndFloat(
+            message->getTimestamp(),
+            (f <= 0.0f) ? 0.0f : 100.0f + 10.0f * log10f(f));
+        sendMessage(0, outgoingMessage);
+    }
 }

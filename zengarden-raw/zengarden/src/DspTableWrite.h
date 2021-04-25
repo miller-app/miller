@@ -1,6 +1,6 @@
 /*
  *  Copyright 2017 Jacob Stern
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -26,19 +26,19 @@
 
 /* [tabwrite~ name] */
 class DspTableWrite : public DspObject, public TableReceiverInterface {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspTableWrite(PdMessage *initMessage, PdGraph *graph);
     ~DspTableWrite();
-    
+
     static const char *getObjectLabel();
     std::string toString();
     ObjectType getObjectType();
-  
+
     char *getName();
     void setTable(MessageTable *table);
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     void processDspWithIndex(int fromIndex, int toIndex);
@@ -50,19 +50,13 @@ class DspTableWrite : public DspObject, public TableReceiverInterface {
 };
 
 inline std::string DspTableWrite::toString() {
-  return DspTableWrite::getObjectLabel();
+    return DspTableWrite::getObjectLabel();
 }
 
-inline const char *DspTableWrite::getObjectLabel() {
-  return "tabwrite~";
-}
+inline const char *DspTableWrite::getObjectLabel() { return "tabwrite~"; }
 
-inline ObjectType DspTableWrite::getObjectType() {
-  return DSP_TABLE_WRITE;
-}
+inline ObjectType DspTableWrite::getObjectType() { return DSP_TABLE_WRITE; }
 
-inline char *DspTableWrite::getName() {
-  return name;
-}
+inline char *DspTableWrite::getName() { return name; }
 
 #endif // _DSP_TABLE_WRITE_H_

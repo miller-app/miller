@@ -23,21 +23,23 @@
 #include "MessageExp.h"
 
 MessageObject *MessageExp::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageExp(initMessage, graph);
+    return new MessageExp(initMessage, graph);
 }
 
-MessageExp::MessageExp(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessageExp::MessageExp(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessageExp::~MessageExp() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageExp::processMessage(int inletIndex, PdMessage *message) {
-  if (message->isFloat(0)) {
-    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-    outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), expf(message->getFloat(0)));
-    sendMessage(0, outgoingMessage);    
-  }
+    if (message->isFloat(0)) {
+        PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+        outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                   expf(message->getFloat(0)));
+        sendMessage(0, outgoingMessage);
+    }
 }

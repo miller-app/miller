@@ -2,7 +2,7 @@
  *  Copyright 2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -28,21 +28,24 @@
 class DspDelayWrite;
 
 /**
- * <code>DelayReceiver</code> is a subclass of <code>DspObject</code> which implements some basic
- * functionality which is used to treat <code>DspDelayRead</code> and <code>DspVariableDelay</code>
- * as the same kind of object. This is because both of these objects are connected to
- * <code>DspDelayWrite</code>s in the same way and it is convenient to treat them similarly as well.
- * NOTE(mhroth): In a better world it might make more sense to implement <code>DelayReceiver</code>
- * as an Java-style interface. But this isn't working for me very well in C++... :-/
+ * <code>DelayReceiver</code> is a subclass of <code>DspObject</code> which
+ * implements some basic functionality which is used to treat
+ * <code>DspDelayRead</code> and <code>DspVariableDelay</code> as the same kind
+ * of object. This is because both of these objects are connected to
+ * <code>DspDelayWrite</code>s in the same way and it is convenient to treat
+ * them similarly as well. NOTE(mhroth): In a better world it might make more
+ * sense to implement <code>DelayReceiver</code> as an Java-style interface. But
+ * this isn't working for me very well in C++... :-/
  */
 class DelayReceiver : public DspObject {
   public:
-    DelayReceiver(int numMessageInlets, int numDspInlets, int numMessageOutlets, int numDspOutlets, PdGraph *graph);
+    DelayReceiver(int numMessageInlets, int numDspInlets, int numMessageOutlets,
+                  int numDspOutlets, PdGraph *graph);
     virtual ~DelayReceiver();
-  
+
     const char *getName();
     void setDelayline(DspDelayWrite *delayline);
-    
+
   protected:
     char *name;
     DspDelayWrite *delayline;

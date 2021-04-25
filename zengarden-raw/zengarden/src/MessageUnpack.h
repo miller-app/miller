@@ -38,13 +38,10 @@ class MessageUnpack : public MessageObject {
 
   private:
     void processMessage(int inletIndex, PdMessage *message);
-  
+
     PdMessage *templateMessage;
 };
 
-inline const char *MessageUnpack::getObjectLabel() {
-  return "unpack";
-}
-
+inline const char *MessageUnpack::getObjectLabel() { return "unpack"; }
 
 #endif // _MESSAGE_UNPACK_H_

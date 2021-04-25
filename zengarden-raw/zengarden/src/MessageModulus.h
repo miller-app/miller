@@ -43,8 +43,6 @@ class MessageModulus : public MessageObject {
     float lastOutput;
 };
 
-inline const char *MessageModulus::getObjectLabel() {
-  return "mod";
-}
+inline const char *MessageModulus::getObjectLabel() { return "mod"; }
 
 #endif // _MESSAGE_MODULUS_H_

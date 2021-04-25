@@ -2,7 +2,7 @@
  *  Copyright 2009,2010 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -28,58 +28,53 @@
 
 /** [tabplay~] */
 class DspTablePlay : public DspObject, public TableReceiverInterface {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspTablePlay(PdMessage *initMessage, PdGraph *graph);
     ~DspTablePlay();
-  
+
     static const char *getObjectLabel();
     std::string toString();
     ObjectType getObjectType();
-  
+
     ConnectionType getConnectionType(int outletIndex);
-  
+
     void sendMessage(int outletIndex, PdMessage *message);
-  
+
     char *getName();
     void setTable(MessageTable *table);
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     void processDspWithIndex(int fromIndex, int toIndex);
-  
+
     /**
-     * Sets up outgoing message message and other conditions to play the table from the given start
-     * to end sample indicies. The entire sample is played if <code>duration</code> is -1.
-     * The <code>startTime</code> is the global time at which the message to begin playback was
-     * received.
+     * Sets up outgoing message message and other conditions to play the table
+     * from the given start to end sample indicies. The entire sample is played
+     * if <code>duration</code> is -1. The <code>startTime</code> is the global
+     * time at which the message to begin playback was received.
      */
     void playTable(int startIndex, int duration, double startTime);
-  
-    // the message which is scheduled to be issued when the sample finishes playing
+
+    // the message which is scheduled to be issued when the sample finishes
+    // playing
     PdMessage *outgoingMessage;
-    int currentTableIndex; // the current index 
-    int endTableIndex; // the index to play to
-  
+    int currentTableIndex; // the current index
+    int endTableIndex;     // the index to play to
+
     char *name;
     MessageTable *table;
 };
 
 inline std::string DspTablePlay::toString() {
-  return DspTablePlay::getObjectLabel();
+    return DspTablePlay::getObjectLabel();
 }
 
-inline const char *DspTablePlay::getObjectLabel() {
-  return "tabplay~";
-}
+inline const char *DspTablePlay::getObjectLabel() { return "tabplay~"; }
 
-inline ObjectType DspTablePlay::getObjectType() {
-  return DSP_TABLE_PLAY;
-}
+inline ObjectType DspTablePlay::getObjectType() { return DSP_TABLE_PLAY; }
 
-inline char *DspTablePlay::getName() {
-  return name;
-}
+inline char *DspTablePlay::getName() { return name; }
 
 #endif // _DSP_TABLE_PLAY_H_

@@ -27,19 +27,20 @@
 
 /** [notein], [notein float] */
 class MessageNotein : public RemoteMessageReceiver {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     MessageNotein(PdMessage *initMessage, PdGraph *graph);
     ~MessageNotein();
-    
+
     static const char *getObjectLabel();
     std::string toString();
     ObjectType getObjectType();
-  
-    /** Returns the zero-indexed midi channel which this object outputs. -1 if omni. */
+
+    /** Returns the zero-indexed midi channel which this object outputs. -1 if
+     * omni. */
     int getChannel();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     bool isOmni();
@@ -47,16 +48,12 @@ class MessageNotein : public RemoteMessageReceiver {
     int channel;
 };
 
-inline const char *MessageNotein::getObjectLabel() {
-  return "notein";
-}
+inline const char *MessageNotein::getObjectLabel() { return "notein"; }
 
 inline std::string MessageNotein::toString() {
-  return MessageNotein::getObjectLabel();
+    return MessageNotein::getObjectLabel();
 }
 
-inline ObjectType MessageNotein::getObjectType() {
-  return MESSAGE_NOTEIN;
-}
+inline ObjectType MessageNotein::getObjectType() { return MESSAGE_NOTEIN; }
 
 #endif // _MESSAGE_NOTEIN_H_

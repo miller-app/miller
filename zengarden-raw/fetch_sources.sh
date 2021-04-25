@@ -16,9 +16,23 @@ clone_repo() {
 
 rm_unused() {
     cd "$zen_src" || exit
-    rm -rf examples jni libs scripts src/main.cpp src/ZenGardenDS src/me Xcode \
-        junit-4.8.2.jar OBJECTS.txt pyExampleGarden.py runme-java.sh \
-        runme-python.sh .git .gitignore
+    rm -rf \
+        .git \
+        .gitignore \
+        OBJECTS.txt \
+        Xcode \
+        _clang-format \
+        examples \
+        jni \
+        junit-4.8.2.jar \
+        libs \
+        pyExampleGarden.py \
+        runme-java.sh \
+        runme-python.sh \
+        scripts \
+        src/ZenGardenDS \
+        src/main.cpp \
+        src/me
     cd - || exit
 }
 

@@ -22,53 +22,58 @@
 
 #include "MessageLessThanOrEqualTo.h"
 
-MessageObject *MessageLessThanOrEqualTo::newObject(PdMessage *initMessage, PdGraph *graph) {
-  return new MessageLessThanOrEqualTo(initMessage, graph);
+MessageObject *MessageLessThanOrEqualTo::newObject(PdMessage *initMessage,
+                                                   PdGraph *graph) {
+    return new MessageLessThanOrEqualTo(initMessage, graph);
 }
 
-MessageLessThanOrEqualTo::MessageLessThanOrEqualTo(PdMessage *initMessage, PdGraph *graph) : MessageObject(2, 1, graph) {
-  constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
-  lastOutput = 0.0f;
+MessageLessThanOrEqualTo::MessageLessThanOrEqualTo(PdMessage *initMessage,
+                                                   PdGraph *graph)
+    : MessageObject(2, 1, graph) {
+    constant = initMessage->isFloat(0) ? initMessage->getFloat(0) : 0.0f;
+    lastOutput = 0.0f;
 }
 
 MessageLessThanOrEqualTo::~MessageLessThanOrEqualTo() {
-  // nothing to do
+    // nothing to do
 }
 
-void MessageLessThanOrEqualTo::processMessage(int inletIndex, PdMessage *message) {
-  switch (inletIndex) {
+void MessageLessThanOrEqualTo::processMessage(int inletIndex,
+                                              PdMessage *message) {
+    switch (inletIndex) {
     case 0: {
-      switch (message->getType(0)) {
+        switch (message->getType(0)) {
         case FLOAT: {
-          lastOutput = (message->getFloat(0) <= constant) ? 1.0f : 0.0f;
-          // allow fallthrough
+            lastOutput = (message->getFloat(0) <= constant) ? 1.0f : 0.0f;
+            // allow fallthrough
         }
         case BANG: {
-          PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-          outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(), lastOutput);
-          sendMessage(0, outgoingMessage);
-          break;
+            PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+            outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
+                                                       lastOutput);
+            sendMessage(0, outgoingMessage);
+            break;
         }
         default: {
-          break;
+            break;
         }
-      }
-      break;
+        }
+        break;
     }
     case 1: {
-      if (message->isFloat(0)) {
-        constant = message->getFloat(0);
-      }
-      break;
+        if (message->isFloat(0)) {
+            constant = message->getFloat(0);
+        }
+        break;
     }
     default: {
-      break;
+        break;
     }
-  }
+    }
 }
 
 std::string MessageLessThanOrEqualTo::toString() {
-  char str[snprintf(NULL, 0, "<= %g", constant)+1];
-  snprintf(str, sizeof(str), "<= %g", constant);
-  return string(str);
+    char str[snprintf(NULL, 0, "<= %g", constant) + 1];
+    snprintf(str, sizeof(str), "<= %g", constant);
+    return string(str);
 }

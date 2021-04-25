@@ -27,7 +27,7 @@
 
 /** [print~], [print~ symbol] */
 class DspPrint : public DspObject {
-  
+
   public:
     static MessageObject *newObject(PdMessage *initMessage, PdGraph *graph);
     DspPrint(PdMessage *initMessage, PdGraph *graph);
@@ -35,20 +35,18 @@ class DspPrint : public DspObject {
 
     static const char *getObjectLabel();
     std::string toString();
-    
+
   private:
     void processMessage(int inletIndex, PdMessage *message);
     void processDspWithIndex(int fromIndex, int toIndex);
-  
+
     char *name;
 };
 
-inline const char *DspPrint::getObjectLabel() {
-  return "print~";
-}
+inline const char *DspPrint::getObjectLabel() { return "print~"; }
 
 inline std::string DspPrint::toString() {
-  return std::string(DspPrint::getObjectLabel()) + " " + name;
+    return std::string(DspPrint::getObjectLabel()) + " " + name;
 }
 
 #endif // _DSP_PRINT_H_

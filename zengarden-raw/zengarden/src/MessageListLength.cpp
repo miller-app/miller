@@ -2,7 +2,7 @@
  *  Copyright 2010,2011 Reality Jockey, Ltd.
  *                 info@rjdj.me
  *                 http://rjdj.me/
- * 
+ *
  *  This file is part of ZenGarden.
  *
  *  ZenGarden is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with ZenGarden.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -22,18 +22,20 @@
 
 #include "MessageListLength.h"
 
-MessageListLength::MessageListLength(PdMessage *initMessage, PdGraph *graph) : MessageObject(1, 1, graph) {
-  // nothing to do
+MessageListLength::MessageListLength(PdMessage *initMessage, PdGraph *graph)
+    : MessageObject(1, 1, graph) {
+    // nothing to do
 }
 
 MessageListLength::~MessageListLength() {
-  // nothing to do
+    // nothing to do
 }
 
 void MessageListLength::processMessage(int inletIndex, PdMessage *message) {
-  PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
-  // bangs are not considered to add length to lists
-  outgoingMessage->initWithTimestampAndFloat(message->getTimestamp(),
-      message->isBang(0) ? 0.0f : (float) message->getNumElements());
-  sendMessage(0, outgoingMessage);
+    PdMessage *outgoingMessage = PD_MESSAGE_ON_STACK(1);
+    // bangs are not considered to add length to lists
+    outgoingMessage->initWithTimestampAndFloat(
+        message->getTimestamp(),
+        message->isBang(0) ? 0.0f : (float)message->getNumElements());
+    sendMessage(0, outgoingMessage);
 }
