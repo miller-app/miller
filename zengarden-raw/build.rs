@@ -8,17 +8,25 @@ use glob::{glob, GlobError};
 fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
 
-    compile();
+    // watch sources
+    let sources = glob("zengarden/src/*.cpp")
+        .expect("Can't collect ZenGarden sources to compile.")
+        .map(|item| {
+            println!(
+                "cargo:rerun-if-changed={}",
+                item.as_ref().unwrap().to_str().unwrap()
+            );
+            item
+        })
+        .collect::<Result<Vec<PathBuf>, GlobError>>()
+        .unwrap();
+
+    compile(sources);
     link();
     generate_bindings();
 }
 
-fn compile() {
-    let sources = glob("zengarden/src/*.cpp")
-        .expect("Can't collect ZenGarden sources to compile.")
-        .collect::<Result<Vec<PathBuf>, GlobError>>()
-        .unwrap();
-
+fn compile(sources: Vec<PathBuf>) {
     let mut compiler = cc::Build::new();
 
     let mut builder = compiler
