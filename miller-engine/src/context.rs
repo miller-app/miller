@@ -278,8 +278,8 @@ impl Config {
     }
 }
 
-unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
-unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
+// unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
+// unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
 
 /// [Context] errors.
 #[derive(Debug, Error)]

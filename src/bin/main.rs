@@ -25,7 +25,8 @@ fn main() {
         .with_in_ch_num(config.channels)
         .with_out_ch_num(config.channels);
 
-    let mut context = Context::<ContextDispatcher, AudioLoopF32>::new(context_config, 0).unwrap();
+    let mut context =
+        ContextWrapper(Context::<ContextDispatcher, AudioLoopF32>::new(context_config, 0).unwrap());
 
     // unsafe {
     // let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
@@ -45,7 +46,7 @@ fn main() {
                 let mut offset = 0;
 
                 while offset < data.len() {
-                    let frame = context.next_frame(&[0.0, 0.0]).unwrap();
+                    let frame = context.0.next_frame(&[0.0, 0.0]).unwrap();
                     let end = offset + frame.len();
                     data[offset..end].copy_from_slice(frame);
                     offset = end;
@@ -61,6 +62,11 @@ fn main() {
 
     loop {}
 }
+
+struct ContextWrapper(Context<ContextDispatcher, AudioLoopF32>);
+
+unsafe impl Send for ContextWrapper {}
+unsafe impl Sync for ContextWrapper {}
 
 #[derive(Debug)]
 struct ContextDispatcher;
