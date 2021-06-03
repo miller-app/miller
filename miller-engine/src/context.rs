@@ -278,8 +278,8 @@ impl Config {
     }
 }
 
-// unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
-// unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
+unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
+unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
 
 /// [Context] errors.
 #[derive(Debug, Error)]
@@ -349,32 +349,32 @@ mod tests {
         assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
-    // #[test]
-    // fn context_next_frame_i16() {
-        // let mut context = init_test_context_next_frame::<AudioLoopI16>("loop_with_input.pd");
-// 
-        // let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
-// 
-        // let expected: Vec<i16> = input
-            // .clone()
-            // .enumerate()
-            // .map(|(n, val)| {
-                // let mul = [2_i16, 3][n % context.config.input_ch_num as usize];
-                // val * mul
-            // })
-            // .collect();
-// 
-        // let result: Vec<i16> = input
-            // .collect::<Vec<i16>>()
-            // .chunks(context.config.input_ch_num as usize)
-            // .map(|val| context.next_frame(val).unwrap().to_owned())
-            // .flatten()
-            // .collect();
-// 
-        // // there's a one block delay, so we compare slices of a single block only
-        // let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
-        // assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
-    // }
+    #[test]
+    fn context_next_frame_i16() {
+        let mut context = init_test_context_next_frame::<AudioLoopI16>("loop_with_input.pd");
+
+        let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
+
+        let expected: Vec<i16> = input
+            .clone()
+            .enumerate()
+            .map(|(n, val)| {
+                let mul = [2_i16, 3][n % context.config.input_ch_num as usize];
+                val * mul
+            })
+            .collect();
+
+        let result: Vec<i16> = input
+            .collect::<Vec<i16>>()
+            .chunks(context.config.input_ch_num as usize)
+            .map(|val| context.next_frame(val).unwrap().to_owned())
+            .flatten()
+            .collect();
+
+        // there's a one block delay, so we compare slices of a single block only
+        let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
+        assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
+    }
 
     fn init_test_context_next_frame<L: AudioLoop>(file: &str) -> Context<DummyDispatcher, L> {
         let context = Context::<DummyDispatcher, L>::new(Config::default(), 0).unwrap();

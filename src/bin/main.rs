@@ -3,7 +3,7 @@ use cpal::{
     StreamConfig,
 };
 
-use miller_engine::context::{AudioLoopF32, Dispatcher, Config as ContextConfig, Context};
+use miller_engine::context::{AudioLoopF32, Config as ContextConfig, Context, Dispatcher};
 
 fn main() {
     let host = cpal::default_host();
@@ -28,14 +28,14 @@ fn main() {
     let mut context = Context::<ContextDispatcher, AudioLoopF32>::new(context_config, 0).unwrap();
 
     // unsafe {
-        // let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
-        // let filename = CString::new("test.pd").unwrap();
-        // let graph = zg_context_new_graph_from_file(
-            // *(context.raw_context.clone().read().unwrap()),
-            // dir.as_ptr(),
-            // filename.as_ptr(),
-        // );
-        // zg_graph_attach(graph);
+    // let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
+    // let filename = CString::new("test.pd").unwrap();
+    // let graph = zg_context_new_graph_from_file(
+    // *(context.raw_context.clone().read().unwrap()),
+    // dir.as_ptr(),
+    // filename.as_ptr(),
+    // );
+    // zg_graph_attach(graph);
     // }
 
     let stream = device
