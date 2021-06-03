@@ -349,7 +349,7 @@ mod tests {
         assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
-    #[test]
+    // #[test]
     // fn context_next_frame_i16() {
         // let mut context = init_test_context_next_frame::<AudioLoopI16>("loop_with_input.pd");
 // 
