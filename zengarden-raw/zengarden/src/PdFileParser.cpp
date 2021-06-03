@@ -27,8 +27,6 @@
 #include "MessageTable.h"
 #include "MessageText.h"
 #include "PdAbstractionDataBase.h"
-#include "PdContext.h"
-#include "PdGraph.h"
 
 PdFileParser::PdFileParser(string directory, string filename) {
     rootPath = string(directory);
@@ -132,20 +130,21 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
         NULL; // used to know on which table the #A line values have to be set
     int lastArrayCreatedIndex = 0;
     while (!(message = nextMessage()).empty()) {
-        // create a non-const copy of message such that strtok can modify it
+        // create a non-const copy of message such that strtok_r can modify it
         char line[message.size() + 1];
         strncpy(line, message.c_str(), sizeof(line));
+        char *saveptr;
 
-        char *hashType = strtok(line, " ");
+        char *hashType = strtok_r(line, " ", &saveptr);
 
         if (!strcmp(hashType, "#N")) {
-            char *objectType = strtok(NULL, " ");
+            char *objectType = strtok_r(NULL, " ", &saveptr);
             if (!strcmp(objectType, "canvas")) {
-                int canvasX = atoi(strtok(NULL, " "));
-                int canvasY = atoi(strtok(NULL, " "));
-                int canvasW = atoi(strtok(NULL, " "));
-                int canvasH = atoi(strtok(NULL, " "));
-                const char *canvasName = strtok(NULL, " ");
+                int canvasX = atoi(strtok_r(NULL, " ", &saveptr));
+                int canvasY = atoi(strtok_r(NULL, " ", &saveptr));
+                int canvasW = atoi(strtok_r(NULL, " ", &saveptr));
+                int canvasH = atoi(strtok_r(NULL, " ", &saveptr));
+                const char *canvasName = strtok_r(NULL, " ", &saveptr);
 
                 // A new graph is defined inline. No arguments are passed (from
                 // this line) the graphId is not incremented as this is a
@@ -188,17 +187,17 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
                 context->printErr("Unrecognised #N object type: \"%s\".", line);
             }
         } else if (!strcmp(hashType, "#X")) {
-            char *objectType = strtok(NULL, " ");
+            char *objectType = strtok_r(NULL, " ", &saveptr);
             if (!strcmp(objectType, "obj")) {
                 // read the canvas coordinates (Pd defines them to be integers,
                 // ZG represents them as floats internally)
-                float canvasX = (float)atoi(strtok(NULL, " "));
-                float canvasY = (float)atoi(strtok(NULL, " "));
+                float canvasX = (float)atoi(strtok_r(NULL, " ", &saveptr));
+                float canvasY = (float)atoi(strtok_r(NULL, " ", &saveptr));
 
                 // resolve $ variables in the object label (such as objects that
                 // are simply labeled "$1")
                 char *objectLabel =
-                    strtok(NULL, " ;\r"); // delimit with " " or ";"
+                    strtok_r(NULL, " ;\r", &saveptr); // delimit with " " or ";"
 
                 char resBufferLabel[OBJECT_LABEL_RESOLUTION_BUFFER_LENGTH];
                 PdMessage::resolveString(
@@ -210,7 +209,8 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
 
                 // resolve $ variables in the object arguments
                 char *objectInitString =
-                    strtok(NULL, ";\r"); // get the object initialisation string
+                    strtok_r(NULL, ";\r",
+                             &saveptr); // get the object initialisation string
                 char resBuffer[RESOLUTION_BUFFER_LENGTH];
                 initMessage->initWithSARb(
                     INIT_MESSAGE_MAX_ELEMENTS, objectInitString,
@@ -265,35 +265,35 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
                     graph->addObject(canvasX, canvasY, messageObject);
                 }
             } else if (!strcmp(objectType, "msg")) {
-                float canvasX = (float)atoi(
-                    strtok(NULL, " ")); // read the first canvas coordinate
-                float canvasY = (float)atoi(
-                    strtok(NULL, " ")); // read the second canvas coordinate
-                char *objectInitString =
-                    strtok(NULL, "\n\r"); // get the message initialisation
-                                          // string (including trailing ';')
+                float canvasX = (float)atoi(strtok_r(
+                    NULL, " ", &saveptr)); // read the first canvas coordinate
+                float canvasY = (float)atoi(strtok_r(
+                    NULL, " ", &saveptr)); // read the second canvas coordinate
+                char *objectInitString = strtok_r(
+                    NULL, "\n\r", &saveptr); // get the message initialisation
+                                             // string (including trailing ';')
                 initMessage->initWithTimestampAndSymbol(0.0, objectInitString);
                 MessageObject *messageObject = context->newObject(
                     MessageMessageBox::getObjectLabel(), initMessage, graph);
                 graph->addObject(canvasX, canvasY, messageObject);
             } else if (!strcmp(objectType, "connect")) {
-                int fromObjectIndex = atoi(strtok(NULL, " "));
-                int outletIndex = atoi(strtok(NULL, " "));
-                int toObjectIndex = atoi(strtok(NULL, " "));
-                int inletIndex = atoi(strtok(NULL, ";"));
+                int fromObjectIndex = atoi(strtok_r(NULL, " ", &saveptr));
+                int outletIndex = atoi(strtok_r(NULL, " ", &saveptr));
+                int toObjectIndex = atoi(strtok_r(NULL, " ", &saveptr));
+                int inletIndex = atoi(strtok_r(NULL, ";", &saveptr));
                 graph->addConnection(fromObjectIndex, outletIndex,
                                      toObjectIndex, inletIndex);
             } else if (!strcmp(objectType, "floatatom")) {
-                float canvasX = (float)atoi(strtok(NULL, " "));
-                float canvasY = (float)atoi(strtok(NULL, " "));
+                float canvasX = (float)atoi(strtok_r(NULL, " ", &saveptr));
+                float canvasY = (float)atoi(strtok_r(NULL, " ", &saveptr));
                 initMessage->initWithTimestampAndFloat(0.0, 0.0f);
                 MessageObject *messageObject = context->newObject(
                     MessageFloat::getObjectLabel(), initMessage,
                     graph); // defines a number box
                 graph->addObject(canvasX, canvasY, messageObject);
             } else if (!strcmp(objectType, "symbolatom")) {
-                float canvasX = (float)atoi(strtok(NULL, " "));
-                float canvasY = (float)atoi(strtok(NULL, " "));
+                float canvasX = (float)atoi(strtok_r(NULL, " ", &saveptr));
+                float canvasY = (float)atoi(strtok_r(NULL, " ", &saveptr));
                 initMessage->initWithTimestampAndSymbol(0.0, NULL);
                 MessageObject *messageObject = context->newObject(
                     MessageSymbol::getObjectLabel(), initMessage, graph);
@@ -304,17 +304,18 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
                 // the process order will be computed by the parent graph
                 graph = graph->getParentGraph();
             } else if (!strcmp(objectType, "text")) {
-                float canvasX = (float)atoi(strtok(NULL, " "));
-                float canvasY = (float)atoi(strtok(NULL, " "));
-                char *comment = strtok(NULL, ";"); // get the comment
+                float canvasX = (float)atoi(strtok_r(NULL, " ", &saveptr));
+                float canvasY = (float)atoi(strtok_r(NULL, " ", &saveptr));
+                char *comment =
+                    strtok_r(NULL, ";", &saveptr); // get the comment
                 initMessage->initWithTimestampAndSymbol(0.0, comment);
                 MessageObject *messageText = context->newObject(
                     MessageText::getObjectLabel(), initMessage, graph);
                 graph->addObject(canvasX, canvasY, messageText);
             } else if (!strcmp(objectType, "declare")) {
                 // set environment for loading patch
-                char *objectInitString =
-                    strtok(NULL, ";"); // get the arguments to declare
+                char *objectInitString = strtok_r(
+                    NULL, ";", &saveptr); // get the arguments to declare
                 initMessage->initWithString(0.0, 2,
                                             objectInitString); // parse them
                 if (initMessage->isSymbol(0, "-path")) {
@@ -330,7 +331,8 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
                 // creates a new table
                 // objectInitString should contain both name and buffer length
                 char *objectInitString =
-                    strtok(NULL, ";"); // get the object initialisation string
+                    strtok_r(NULL, ";",
+                             &saveptr); // get the object initialisation string
                 char resBuffer[RESOLUTION_BUFFER_LENGTH];
                 initMessage->initWithSARb(4, objectInitString,
                                           graph->getArguments(), resBuffer,
@@ -356,8 +358,8 @@ PdGraph *PdFileParser::execute(PdMessage *initMsg, PdGraph *graph,
                 float *buffer = lastArrayCreated->getBuffer(&bufferLength);
                 char *token = NULL;
 
-                int index = atoi(strtok(NULL, " ;"));
-                while ((token = strtok(NULL, " ;")) != NULL) {
+                int index = atoi(strtok_r(NULL, " ;", &saveptr));
+                while ((token = strtok_r(NULL, " ;", &saveptr)) != NULL) {
                     if (index >= bufferLength) {
                         context->printErr("#A trying to add value at index %d "
                                           "while buffer length is %d",

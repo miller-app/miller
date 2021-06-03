@@ -7,7 +7,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -25,7 +25,7 @@ pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopErr
 /// share data between themselves.
 #[derive(Debug)]
 pub struct Context<D: Dispatcher, L: AudioLoop> {
-    raw_context: Arc<RwLock<*mut PdContext>>,
+    raw_context: RwLock<*mut PdContext>,
     config: Config,
     audio_loop: L,
     _dispatcher: PhantomData<D>,
@@ -54,7 +54,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     fn init_raw_context(
         config: &Config,
         user_data: *mut c_void,
-    ) -> Result<Arc<RwLock<*mut PdContext>>, Error> {
+    ) -> Result<RwLock<*mut PdContext>, Error> {
         let raw_context = unsafe {
             zg_context_new(
                 config.input_ch_num as i32,
@@ -70,7 +70,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
             return Err(Error::Initializing);
         }
 
-        Ok(Arc::new(RwLock::new(raw_context)))
+        Ok(RwLock::new(raw_context))
     }
 
     unsafe extern "C" fn raw_callback(
@@ -149,7 +149,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     /// Borrow user data.
     pub fn user_data(&self) -> &'_ D::UserData {
         unsafe {
-            let raw = zg_context_get_userinfo(*(self.raw_context.clone().read().unwrap()));
+            let raw = zg_context_get_userinfo(*(self.raw_context.read().unwrap()));
             (raw as *mut D::UserData).as_ref().unwrap()
         }
     }
@@ -157,7 +157,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     /// Borrow mutable user data.
     pub fn user_data_mut(&self) -> &'_ mut D::UserData {
         unsafe {
-            let raw = zg_context_get_userinfo(*(self.raw_context.clone().write().unwrap()));
+            let raw = zg_context_get_userinfo(*(self.raw_context.write().unwrap()));
             (raw as *mut D::UserData).as_mut().unwrap()
         }
     }
@@ -170,8 +170,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         &mut self,
         in_frame: &[L::SampleType],
     ) -> Result<&[L::SampleType], AudioLoopError> {
-        let raw_clone = self.raw_context.clone();
-        let raw_context = raw_clone.read().unwrap();
+        let raw_context = self.raw_context.read().unwrap();
         self.audio_loop.next_frame(*raw_context, in_frame)
     }
 }
@@ -179,7 +178,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
 impl<D: Dispatcher, L: AudioLoop> Drop for Context<D, L> {
     fn drop(&mut self) {
         unsafe {
-            zg_context_delete(*(self.raw_context.read().unwrap()));
+            zg_context_delete(*(self.raw_context.write().unwrap()));
         }
     }
 }
@@ -279,8 +278,8 @@ impl Config {
     }
 }
 
-unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
-unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
+// unsafe impl<D: Dispatcher, L: AudioLoop> Send for Context<D, L> {}
+// unsafe impl<D: Dispatcher, L: AudioLoop> Sync for Context<D, L> {}
 
 /// [Context] errors.
 #[derive(Debug, Error)]
@@ -324,7 +323,7 @@ mod tests {
 
     #[test]
     fn context_next_frame_f32() {
-        let mut context = init_test_context_next_frame::<AudioLoopF32>();
+        let mut context = init_test_context_next_frame::<AudioLoopF32>("loop_with_input.pd");
 
         let input = 0..context.config.blocksize * context.config.input_ch_num * 2;
 
@@ -351,42 +350,42 @@ mod tests {
     }
 
     #[test]
-    fn context_next_frame_i16() {
-        let mut context = init_test_context_next_frame::<AudioLoopI16>();
+    // fn context_next_frame_i16() {
+        // let mut context = init_test_context_next_frame::<AudioLoopI16>("loop_with_input.pd");
+// 
+        // let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
+// 
+        // let expected: Vec<i16> = input
+            // .clone()
+            // .enumerate()
+            // .map(|(n, val)| {
+                // let mul = [2_i16, 3][n % context.config.input_ch_num as usize];
+                // val * mul
+            // })
+            // .collect();
+// 
+        // let result: Vec<i16> = input
+            // .collect::<Vec<i16>>()
+            // .chunks(context.config.input_ch_num as usize)
+            // .map(|val| context.next_frame(val).unwrap().to_owned())
+            // .flatten()
+            // .collect();
+// 
+        // // there's a one block delay, so we compare slices of a single block only
+        // let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
+        // assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
+    // }
 
-        let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
-
-        let expected: Vec<i16> = input
-            .clone()
-            .enumerate()
-            .map(|(n, val)| {
-                let mul = [2_i16, 3][n % context.config.input_ch_num as usize];
-                val * mul
-            })
-            .collect();
-
-        let result: Vec<i16> = input
-            .collect::<Vec<i16>>()
-            .chunks(context.config.input_ch_num as usize)
-            .map(|val| context.next_frame(val).unwrap().to_owned())
-            .flatten()
-            .collect();
-
-        // there's a one block delay, so we compare slices of a single block only
-        let actual_blocksize = (context.config.blocksize * context.config.input_ch_num) as usize;
-        assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
-    }
-
-    fn init_test_context_next_frame<L: AudioLoop>() -> Context<DummyDispatcher, L> {
+    fn init_test_context_next_frame<L: AudioLoop>(file: &str) -> Context<DummyDispatcher, L> {
         let context = Context::<DummyDispatcher, L>::new(Config::default(), 0).unwrap();
         let patch_dir_path = fs::canonicalize("./test/").unwrap();
         let patch_dir_str = patch_dir_path.to_str().unwrap();
 
         unsafe {
             let dir = CString::new(patch_dir_str).unwrap();
-            let filename = CString::new("/loop_with_input.pd").unwrap();
+            let filename = CString::new(format!("/{}", file)).unwrap();
             let graph = zg_context_new_graph_from_file(
-                *(context.raw_context.clone().read().unwrap()),
+                *(context.raw_context.read().unwrap()),
                 dir.as_ptr(),
                 filename.as_ptr(),
             );

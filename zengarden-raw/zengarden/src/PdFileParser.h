@@ -29,8 +29,8 @@
 #include <string.h>
 #include <string>
 
-class PdContext;
-class PdGraph;
+#include "PdContext.h"
+#include "PdGraph.h"
 
 using namespace std;
 
