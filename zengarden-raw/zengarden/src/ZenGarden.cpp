@@ -274,20 +274,20 @@ void zg_context_process_s(ZGContext *context, short *inputBuffers,
         for (int k = 2; k < numInputChannels; k++) {
             for (int i = k, j = k * blockSize; i < inputBufferLength;
                  i += numInputChannels, j++) {
-                finputBuffers[j] = ((float)inputBuffers[i]) / 32768.0f;
+                finputBuffers[j] = ((float)inputBuffers[i]) / 32767.0f;
             }
         } // allow fallthrough
     }
     case 2: {
         for (int i = 1, j = blockSize; i < inputBufferLength;
              i += numInputChannels, j++) {
-            finputBuffers[j] = ((float)inputBuffers[i]) / 32768.0f;
+            finputBuffers[j] = ((float)inputBuffers[i]) / 32767.0f;
         } // allow fallthrough
     }
     case 1: {
         for (int i = 0, j = 0; i < inputBufferLength;
              i += numInputChannels, j++) {
-            finputBuffers[j] = ((float)inputBuffers[i]) / 32768.0f;
+            finputBuffers[j] = ((float)inputBuffers[i]) / 32767.0f;
         } // allow fallthrough
     }
     case 0:
