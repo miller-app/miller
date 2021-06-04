@@ -113,14 +113,15 @@ impl AudioLoopI16 {
     }
 
     fn update_input(&mut self, in_frame: &[i16]) {
-        let start = self.frame_offset;
-        let end = self.frame_offset + in_frame.len();
+        let start = self.frame_offset * in_frame.len();
+        let end = start + in_frame.len();
         self.in_buf[start..end].copy_from_slice(in_frame);
     }
 
     fn update_output(&mut self) {
-        let end = self.frame_offset + self.out_frame.len();
-        self.out_frame.copy_from_slice(&self.out_buf[self.frame_offset..end]);
+        let start = self.frame_offset * self.out_frame.len();
+        let end = start + self.out_frame.len();
+        self.out_frame.copy_from_slice(&self.out_buf[start..end]);
     }
 }
 

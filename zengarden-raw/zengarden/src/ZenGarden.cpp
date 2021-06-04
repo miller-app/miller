@@ -232,7 +232,7 @@ void zg_context_process_s(ZGContext *context, short *inputBuffers,
     }
 
     // convert samples to range of [-1,+1]
-    float a = 0.000030517578125f; // == 2^-15
+    float a = 0.00003051850948f; // 1/32767 (amplitude step)
     vDSP_vsmul(finputBuffers, 1, &a, finputBuffers, 1, inputBufferLength);
 
     // process the samples
