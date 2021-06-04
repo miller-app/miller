@@ -113,7 +113,7 @@ jobs:
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
           $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
-          rustup target add x86_64-pc-windows-gnu
-          rustup toolchain install stable-x86_64-pc-windows-gnu
+          rustup target add x86_64-pc-windows-gnu --force-non-host
+          rustup toolchain install stable-x86_64-pc-windows-gnu --force-non-host
           cargo test --all --target x86_64-pc-windows-gnu
 
