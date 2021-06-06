@@ -10,53 +10,53 @@ on:
 
 jobs:
 
-  # linux:
-    # runs-on: ubuntu-latest
-# 
-    # steps:
-      # - uses: actions/checkout@v2
-# 
-      # - name: Install dependencies
-        # run: sudo apt-get install -y libasound2-dev libsndfile-dev
-# 
-      # - name: Cache Cargo
-        # uses: actions/cache@v2
-        # with:
-          # path: |
-            # ~/.cargo/registry
-            # ~/.cargo/git
-            # target
-          # key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-# 
-      # - name: Build 
-        # run: cargo build
-# 
-      # - name: Test
-        # run: cargo test --all
-# 
-  # macos:
-    # runs-on: macos-latest
-# 
-    # steps:
-      # - uses: actions/checkout@v2
-# 
-      # - name: Install dependencies
-        # run: brew install libsndfile
-# 
-      # - name: Cache Cargo
-        # uses: actions/cache@v2
-        # with:
-          # path: |
-            # ~/.cargo/registry
-            # ~/.cargo/git
-            # target
-          # key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-# 
-      # - name: Build 
-        # run: cargo build
-# 
-      # - name: Test
-        # run: cargo test --all
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get install -y libasound2-dev libsndfile-dev
+
+      - name: Cache Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build 
+        run: cargo build
+
+      - name: Test
+        run: cargo test --all
+
+  macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: brew install libsndfile
+
+      - name: Cache Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build 
+        run: cargo build
+
+      - name: Test
+        run: cargo test --all
 
   windows:
 
@@ -93,17 +93,17 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # - name: Build
-        # env: 
-          # CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
-          # LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
-          # LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
-          # LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
-        # run: |
-          # $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
-          # rustup target add x86_64-pc-windows-gnu
-          # rustup toolchain install stable-x86_64-pc-windows-gnu
-          # cargo build --target x86_64-pc-windows-gnu
+      - name: Build
+        env: 
+          CPLUS_INCLUDE_PATH: C:\Program Files\libsndfile\include
+          LIBSNDFILE_PATH: C:/Program Files/libsndfile/lib
+          LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
+          LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
+        run: |
+          $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
+          rustup target add x86_64-pc-windows-gnu
+          rustup toolchain install stable-x86_64-pc-windows-gnu
+          cargo build --target x86_64-pc-windows-gnu
 
       - name: Test
         env: 
@@ -115,5 +115,5 @@ jobs:
           $Env:Path="C:\msys64\mingw64\bin;$Env:Path;~\.rustup\toolchains\stable-x86_64-pc-windows-gnu\bin"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
-          cargo test --all --target x86_64-pc-windows-gnu
+          cargo test --target x86_64-pc-windows-gnu # cargo test --all doesn't work in CI
 
