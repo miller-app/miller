@@ -112,9 +112,8 @@ jobs:
           LIBCLANG_PATH: ${{ env.LLVM_PATH }}/lib
           LLVM_CONFIG_PATH: ${{ env.LLVM_PATH }}/bin/llvm-config
         run: |
-          $Env:Path="C:\msys64\mingw64\bin;$Env:Path"
+          $Env:Path="C:\msys64\mingw64\bin;$HOME\.rustup\toolchains\$RUST_VERSION-x86_64-pc-windows-gnu\bin;$Env:Path"
           rustup target add x86_64-pc-windows-gnu
           rustup toolchain install stable-x86_64-pc-windows-gnu
-          # cargo test --all --target x86_64-pc-windows-gnu
-          cargo test -p miller-engine --lib --target x86_64-pc-windows-gnu
+          cargo test --all --target x86_64-pc-windows-gnu
 
