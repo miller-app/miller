@@ -95,16 +95,19 @@ impl Message {
                 return Err(Error::Parse);
             }
 
-            Ok(Self::from_raw_message(raw_message))
+            Self::from_raw_message(raw_message).ok_or(Error::RawMessageIsNull)
         }
     }
 
-    unsafe fn from_raw_message(raw_message: *mut ZGMessage) -> Self {
+    pub(crate) unsafe fn from_raw_message(raw_message: *mut ZGMessage) -> Option<Self> {
+        if raw_message.is_null() {
+            return None;
+        }
         let mut message = Self::default();
         message.collect_elements_from_raw_message(raw_message);
         message.timestamp = zg_message_get_timestamp(raw_message);
         message.raw_message = Some(RwLock::new(raw_message));
-        message
+        Some(message)
     }
 
     unsafe fn collect_elements_from_raw_message(&mut self, raw_message: *mut ZGMessage) {
@@ -122,6 +125,14 @@ impl Message {
                 ZGMessageElementType::ZG_MESSAGE_ELEMENT_BANG => MessageElement::Bang,
             };
             self.elements.push(element);
+        }
+    }
+
+    pub(crate) unsafe fn into_raw(mut self) -> *mut ZGMessage {
+        if let Some(raw) = self.raw_message.take() {
+            raw.into_inner().unwrap()
+        } else {
+            std::ptr::null::<ZGMessage>() as *mut ZGMessage
         }
     }
 }
@@ -172,6 +183,9 @@ pub enum Error {
     /// Error parsing message from string.
     #[error("Can't parse message.")]
     Parse,
+    /// Raw message is null.
+    #[error("Raw message is null.")]
+    RawMessageIsNull,
 }
 
 #[cfg(test)]
@@ -192,8 +206,14 @@ mod tests {
         assert_eq!(message.timestamp, 12.345);
         assert_eq!(message.num_elements(), 4);
         assert_eq!(message.element_at(0), &MessageElement::Float(1.2));
-        assert_eq!(message.element_at(1), &MessageElement::Symbol("foo".to_string()));
-        assert_eq!(message.element_at(2), &MessageElement::Symbol("bar".to_string()));
+        assert_eq!(
+            message.element_at(1),
+            &MessageElement::Symbol("foo".to_string())
+        );
+        assert_eq!(
+            message.element_at(2),
+            &MessageElement::Symbol("bar".to_string())
+        );
         assert_eq!(message.element_at(3), &MessageElement::Bang);
     }
 

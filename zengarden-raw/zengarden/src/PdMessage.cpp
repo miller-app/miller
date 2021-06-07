@@ -35,7 +35,8 @@ void PdMessage::initWithString(double ts, unsigned int maxElements,
                                char *initString) {
     timestamp = ts;
 
-    char *token = strtok(initString, " ;");
+    char *saveptr;
+    char *token = strtok_r(initString, " ;", &saveptr);
     if (token == NULL || strlen(initString) == 0) {
         initWithTimestampAndBang(ts); // just in case, there is always at least
                                       // one element in a message
@@ -43,7 +44,8 @@ void PdMessage::initWithString(double ts, unsigned int maxElements,
         unsigned int i = 0;
         do {
             parseAndSetMessageElement(i++, token);
-        } while (((token = strtok(NULL, " ;")) != NULL) && (i < maxElements));
+        } while (((token = strtok_r(NULL, " ;", &saveptr)) != NULL) &&
+                 (i < maxElements));
 
         numElements = i;
     }

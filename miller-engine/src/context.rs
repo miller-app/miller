@@ -17,6 +17,8 @@ use zengarden_raw::{
     ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
 };
 
+use crate::message::Message;
+
 pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopError};
 
 /// [Context] represents a Pure Data context. There can be multiple contexts, each with its own
@@ -118,11 +120,12 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         udata: &mut D::UserData,
         ptr: *mut c_void,
     ) -> *mut c_void {
-        let raw_message = ptr as *mut ZGReceiverMessagePair;
-        let receiver_name: String = CStr::from_ptr((*raw_message).receiverName)
+        let raw_receiver_message = ptr as *mut ZGReceiverMessagePair;
+        let receiver_name: String = CStr::from_ptr((*raw_receiver_message).receiverName)
             .to_string_lossy()
             .into();
-        D::receiver_message(ReceiverMessage { receiver_name }, udata);
+        let message = Message::from_raw_message((*raw_receiver_message).message);
+        D::receiver_message(receiver_name, message, udata);
         ptr::null::<c_void>() as *mut _
     }
 
@@ -202,7 +205,7 @@ pub trait Dispatcher: fmt::Debug {
 
     /// Called when a message for the registered with [Context::register_receiver] receiver is
     /// send.
-    fn receiver_message(_: ReceiverMessage, _: &mut Self::UserData) {}
+    fn receiver_message(_name: String, _message: Option<Message>, _: &mut Self::UserData) {}
 
     /// A referenced object, abstraction or external can't be found in the current context.
     ///
@@ -518,8 +521,8 @@ mod tests {
             }
         }
 
-        fn receiver_message(msg: ReceiverMessage, data: &mut Self::UserData) {
-            data.0 = msg.receiver_name.clone();
+        fn receiver_message(name: String, _msg: Option<Message>, data: &mut Self::UserData) {
+            data.0 = name;
         }
 
         fn cannot_find_obj(name: String, data: &mut Self::UserData) -> Option<String> {
