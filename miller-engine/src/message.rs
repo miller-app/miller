@@ -150,7 +150,7 @@ impl ToString for Message {
 }
 
 /// Message element type.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MessageElement {
     /// Float.
     Float(f64),
@@ -172,4 +172,59 @@ pub enum Error {
     /// Error parsing message from string.
     #[error("Can't parse message.")]
     Parse,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn message_build() {
+        let message = Message::default()
+            .with_timestamp(12.345)
+            .with_element(MessageElement::Float(1.2))
+            .with_element(MessageElement::Symbol("foo".to_string()))
+            .with_element(MessageElement::Symbol("bar".to_string()))
+            .with_element(MessageElement::Bang)
+            .build();
+
+        assert!(message.raw_message.is_some());
+        assert_eq!(message.timestamp, 12.345);
+        assert_eq!(message.num_elements(), 4);
+        assert_eq!(message.element_at(0), &MessageElement::Float(1.2));
+        assert_eq!(message.element_at(1), &MessageElement::Symbol("foo".to_string()));
+        assert_eq!(message.element_at(2), &MessageElement::Symbol("bar".to_string()));
+        assert_eq!(message.element_at(3), &MessageElement::Bang);
+    }
+
+    #[test]
+    fn message_to_string() {
+        let message = Message::default()
+            .with_timestamp(12.345)
+            .with_element(MessageElement::Float(1.2))
+            .with_element(MessageElement::Symbol("foo".to_string()))
+            .with_element(MessageElement::Symbol("bar".to_string()))
+            .with_element(MessageElement::Bang)
+            .build();
+
+        assert_eq!("1.2 foo bar bang".to_string(), message.to_string());
+    }
+
+    #[test]
+    fn message_from_string() {
+        let message = Message::from_str(12.345, "1.0 foo bar bang").unwrap();
+        let expected = Message::default()
+            .with_timestamp(12.345)
+            .with_element(MessageElement::Float(1.0))
+            .with_element(MessageElement::Symbol("foo".to_string()))
+            .with_element(MessageElement::Symbol("bar".to_string()))
+            .with_element(MessageElement::Bang)
+            .build();
+
+        assert_eq!(message.timestamp, expected.timestamp);
+
+        for n in 0..message.num_elements() {
+            assert_eq!(message.element_at(n), expected.element_at(n));
+        }
+    }
 }
