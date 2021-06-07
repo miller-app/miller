@@ -1,10 +1,17 @@
 //! This module contains the message builder.
 
-use std::{ffi::CString, sync::RwLock};
+use std::{
+    ffi::{CStr, CString},
+    string::ToString,
+    sync::RwLock,
+};
 
+use thiserror::Error;
 use zengarden_raw::{
-    zg_message_delete, zg_message_new, zg_message_set_bang, zg_message_set_float,
-    zg_message_set_symbol, ZGMessage,
+    zg_message_delete, zg_message_get_element_type, zg_message_get_float,
+    zg_message_get_num_elements, zg_message_get_symbol, zg_message_get_timestamp, zg_message_new,
+    zg_message_new_from_string, zg_message_set_bang, zg_message_set_float, zg_message_set_symbol,
+    zg_message_to_string, ZGMessage, ZGMessageElementType,
 };
 
 /// Messages can be sent to a context and corresponding receivers will get them.
@@ -76,6 +83,47 @@ impl Message {
     pub fn element_at(&self, index: usize) -> &MessageElement {
         &self.elements[index]
     }
+
+    /// Initialize a message from string.
+    pub fn from_str(timestamp: f64, message: &str) -> Result<Self, Error> {
+        unsafe {
+            let raw_str =
+                CString::new(message).expect(&format!("Cannot build raw string from {}", message));
+            let raw_message = zg_message_new_from_string(timestamp, raw_str.as_ptr());
+
+            if raw_message.is_null() {
+                return Err(Error::Parse);
+            }
+
+            Ok(Self::from_raw_message(raw_message))
+        }
+    }
+
+    unsafe fn from_raw_message(raw_message: *mut ZGMessage) -> Self {
+        let mut message = Self::default();
+        message.collect_elements_from_raw_message(raw_message);
+        message.timestamp = zg_message_get_timestamp(raw_message);
+        message.raw_message = Some(RwLock::new(raw_message));
+        message
+    }
+
+    unsafe fn collect_elements_from_raw_message(&mut self, raw_message: *mut ZGMessage) {
+        let num_elements = zg_message_get_num_elements(raw_message);
+
+        for n in 0..num_elements {
+            let element = match zg_message_get_element_type(raw_message, n) {
+                ZGMessageElementType::ZG_MESSAGE_ELEMENT_FLOAT => {
+                    MessageElement::Float(zg_message_get_float(raw_message, n) as f64)
+                }
+                ZGMessageElementType::ZG_MESSAGE_ELEMENT_SYMBOL => {
+                    let raw_str = CStr::from_ptr(zg_message_get_symbol(raw_message, n));
+                    MessageElement::Symbol(raw_str.to_string_lossy().to_string())
+                }
+                ZGMessageElementType::ZG_MESSAGE_ELEMENT_BANG => MessageElement::Bang,
+            };
+            self.elements.push(element);
+        }
+    }
 }
 
 impl Drop for Message {
@@ -84,6 +132,19 @@ impl Drop for Message {
             unsafe {
                 zg_message_delete(*message.write().unwrap());
             }
+        }
+    }
+}
+
+impl ToString for Message {
+    fn to_string(&self) -> String {
+        unsafe {
+            if let Some(ref raw_message) = self.raw_message {
+                let raw_str = CStr::from_ptr(zg_message_to_string(*raw_message.read().unwrap()));
+                return raw_str.to_string_lossy().to_string();
+            }
+
+            String::new()
         }
     }
 }
@@ -103,4 +164,12 @@ impl Default for MessageElement {
     fn default() -> Self {
         MessageElement::Bang
     }
+}
+
+/// [Message] errors.
+#[derive(Debug, Error)]
+pub enum Error {
+    /// Error parsing message from string.
+    #[error("Can't parse message.")]
+    Parse,
 }
