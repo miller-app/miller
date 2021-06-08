@@ -13,9 +13,11 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 #[allow(unused_imports)]
 use zengarden_raw::{
-    zg_context_delete, zg_context_get_userinfo, zg_context_new, zg_context_process, PdContext,
-    ZGCallbackFunction, ZGMessage, ZGReceiverMessagePair,
+    zg_context_delete, zg_context_get_userinfo, zg_context_new, zg_context_process,
+    zg_context_unregister_receiver, PdContext, ZGCallbackFunction, ZGMessage,
+    ZGReceiverMessagePair,
 };
+use zengarden_raw::{zg_context_register_receiver, zg_context_send_message};
 
 use crate::message::Message;
 
@@ -176,6 +178,38 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         let raw_context = self.raw_context.read().unwrap();
         self.audio_loop.next_frame(*raw_context, in_frame)
     }
+
+    /// Send a message to a receiver.
+    pub fn send_message(&mut self, receiver: &str, message: Message) {
+        unsafe {
+            let raw_name = CString::new(receiver)
+                .expect(&format!("Can't initialize CString from {}", receiver));
+            let raw_message = message.into_raw();
+            zg_context_send_message(
+                *self.raw_context.read().unwrap(),
+                raw_name.as_ptr(),
+                raw_message,
+            );
+        }
+    }
+
+    /// Register a receiver for this context.
+    pub fn register_receiver(&self, receiver: &str) {
+        unsafe {
+            let raw_name = CString::new(receiver)
+                .expect(&format!("Can't initialize CString from {}", receiver));
+            zg_context_register_receiver(*self.raw_context.read().unwrap(), raw_name.as_ptr());
+        }
+    }
+
+    /// Unregister a receiver for this context.
+    pub fn unregister_receiver(&self, receiver: &str) {
+        unsafe {
+            let raw_name = CString::new(receiver)
+                .expect(&format!("Can't initialize CString from {}", receiver));
+            zg_context_unregister_receiver(*self.raw_context.read().unwrap(), raw_name.as_ptr());
+        }
+    }
 }
 
 impl<D: Dispatcher, L: AudioLoop> Drop for Context<D, L> {
@@ -191,7 +225,7 @@ impl<D: Dispatcher, L: AudioLoop> Drop for Context<D, L> {
 /// All methods are optional.
 pub trait Dispatcher: fmt::Debug {
     /// The user data type, which will be passed to the dispatcher's methods.
-    type UserData;
+    type UserData: Default;
 
     /// Print standard message.
     fn print_std(_: String, _: &mut Self::UserData) {}
@@ -214,20 +248,6 @@ pub trait Dispatcher: fmt::Debug {
     /// Optionally, you can return the path to the object definition.
     fn cannot_find_obj(_: String, _: &mut Self::UserData) -> Option<String> {
         None
-    }
-}
-
-/// Message sent to registered receiver.
-#[derive(Clone, Debug)]
-pub struct ReceiverMessage {
-    receiver_name: String,
-    // message: todo!(),
-}
-
-impl ReceiverMessage {
-    /// Get the receiver name.
-    pub fn receiver_name(&self) -> &str {
-        &self.receiver_name
     }
 }
 
@@ -296,6 +316,8 @@ mod tests {
 
     use zengarden_raw::{zg_context_new_graph_from_file, zg_graph_attach};
 
+    use crate::message::MessageElement;
+
     use super::*;
 
     #[test]
@@ -323,7 +345,7 @@ mod tests {
 
     #[test]
     fn context_next_frame_f32() {
-        let mut context = init_test_context_next_frame::<AudioLoopF32>("loop_with_input.pd");
+        let mut context = init_test_context::<DummyDispatcher, AudioLoopF32>("loop_with_input.pd");
 
         let input = 0..context.config.blocksize * context.config.input_ch_num * 2;
 
@@ -351,7 +373,7 @@ mod tests {
 
     #[test]
     fn context_next_frame_i16() {
-        let mut context = init_test_context_next_frame::<AudioLoopI16>("loop_with_input.pd");
+        let mut context = init_test_context::<DummyDispatcher, AudioLoopI16>("loop_with_input.pd");
 
         let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
 
@@ -376,8 +398,26 @@ mod tests {
         assert_eq!(expected[..actual_blocksize], result[actual_blocksize..]);
     }
 
-    fn init_test_context_next_frame<L: AudioLoop>(file: &str) -> Context<DummyDispatcher, L> {
-        let context = Context::<DummyDispatcher, L>::new(Config::default(), 0).unwrap();
+    #[test]
+    fn context_send_message() {
+        let mut context = init_test_context::<TestDispatcher, AudioLoopF32>("send_message.pd");
+        let message = Message::default()
+            .with_element(MessageElement::Symbol("baz".to_string()))
+            .build();
+        let receiver = "test-send-message-s";
+        context.register_receiver(receiver);
+        context.send_message("test-send-message-r", message);
+
+        // as all messages are scheduled in ZenGarden, we should process an audio block
+        for _ in 0..context.config.blocksize + 1 {
+            context.next_frame(&[0.0, 0.0]).unwrap();
+        }
+
+        assert_eq!(context.user_data_mut().0, format!("{}.{}", receiver, "baz"));
+    }
+
+    fn init_test_context<D: Dispatcher, L: AudioLoop>(file: &str) -> Context<D, L> {
+        let context = Context::<D, L>::new(Config::default(), D::UserData::default()).unwrap();
         let patch_dir_path = fs::canonicalize("./test/").unwrap();
         let patch_dir_str = patch_dir_path.to_str().unwrap();
 
@@ -521,8 +561,17 @@ mod tests {
             }
         }
 
-        fn receiver_message(name: String, _msg: Option<Message>, data: &mut Self::UserData) {
-            data.0 = name;
+        fn receiver_message(name: String, msg: Option<Message>, data: &mut Self::UserData) {
+            if let Some(message) = msg {
+                let val = match message.element_at(0) {
+                    MessageElement::Float(val) => val.to_string(),
+                    MessageElement::Symbol(val) => val.to_owned(),
+                    _ => "bang".to_string(),
+                };
+                data.0 = format!("{}.{}", name, val);
+            } else {
+                data.0 = name;
+            }
         }
 
         fn cannot_find_obj(name: String, data: &mut Self::UserData) -> Option<String> {
@@ -531,7 +580,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     struct TestUserData(String);
 
     #[derive(Debug)]

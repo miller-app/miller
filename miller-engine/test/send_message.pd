@@ -1,0 +1,4 @@
+#N canvas 374 185 450 300 12;
+#X obj 137 119 receive test-send-message-r;
+#X obj 137 152 send test-send-message-s;
+#X connect 0 0 1 0;
