@@ -126,7 +126,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         let receiver_name: String = CStr::from_ptr((*raw_receiver_message).receiverName)
             .to_string_lossy()
             .into();
-        let message = Message::from_raw_message((*raw_receiver_message).message);
+        let message = Message::from_raw((*raw_receiver_message).message);
         D::receiver_message(receiver_name, message, udata);
         ptr::null::<c_void>() as *mut _
     }
@@ -401,7 +401,7 @@ mod tests {
     #[test]
     fn context_send_message() {
         let mut context = init_test_context::<TestDispatcher, AudioLoopF32>("send_message.pd");
-        let message = Message::default()
+        let message = Message::builder()
             .with_element(MessageElement::Symbol("baz".to_string()))
             .build();
         let receiver = "test-send-message-s";
@@ -563,12 +563,14 @@ mod tests {
 
         fn receiver_message(name: String, msg: Option<Message>, data: &mut Self::UserData) {
             if let Some(message) = msg {
-                let val = match message.element_at(0) {
-                    MessageElement::Float(val) => val.to_string(),
-                    MessageElement::Symbol(val) => val.to_owned(),
-                    _ => "bang".to_string(),
-                };
-                data.0 = format!("{}.{}", name, val);
+                if let Some(element) = message.element_at(0) {
+                    let val = match element {
+                        MessageElement::Float(val) => val.to_string(),
+                        MessageElement::Symbol(val) => val.to_owned(),
+                        _ => "bang".to_string(),
+                    };
+                    data.0 = format!("{}.{}", name, val);
+                }
             } else {
                 data.0 = name;
             }
