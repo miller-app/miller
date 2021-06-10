@@ -29,7 +29,7 @@ pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopErr
 /// share data between themselves.
 #[derive(Debug)]
 pub struct Context<D: Dispatcher, L: AudioLoop> {
-    raw_context: RwLock<*mut PdContext>,
+    pub(crate) raw_context: RwLock<*mut PdContext>,
     config: Config,
     audio_loop: L,
     _dispatcher: PhantomData<D>,

@@ -14,7 +14,7 @@ use crate::message::Message;
 
 /// Represents an object in a [Graph].
 #[derive(Debug)]
-pub struct Object(*mut ZGObject);
+pub struct Object(pub(crate) *mut ZGObject);
 
 impl Object {
     /// Get position on the canvas.
@@ -46,7 +46,7 @@ impl Object {
             let mut size = 0_u32;
             let pairs = zg_object_get_connections_at_inlet(self.0, inlet as u32, &mut size);
             let pairs = std::slice::from_raw_parts(pairs, size as usize);
-            pairs.into_iter().map(From::from).collect()
+            pairs.into_iter().copied().map(From::from).collect()
         }
     }
 
@@ -57,7 +57,7 @@ impl Object {
             let mut size = 0_u32;
             let pairs = zg_object_get_connections_at_outlet(self.0, outlet as u32, &mut size);
             let pairs = std::slice::from_raw_parts(pairs, size as usize);
-            pairs.into_iter().map(From::from).collect()
+            pairs.into_iter().copied().map(From::from).collect()
         }
     }
 
@@ -112,14 +112,22 @@ impl ToString for Object {
     }
 }
 
+impl From<*mut ZGObject> for Object {
+    fn from(raw: *mut ZGObject) -> Self {
+        Self(raw)
+    }
+}
+
 /// Object position on canvas.
 ///
 /// Coordinates are represented as floats and are real valued, though Pd uses only non-negative
 /// values.
 #[derive(Debug, Clone, Copy)]
 pub struct ObjectPosition {
-    x: f32,
-    y: f32,
+    /// X position.
+    pub x: f32,
+    /// Y position.
+    pub y: f32,
 }
 
 impl From<(f32, f32)> for ObjectPosition {
@@ -155,8 +163,8 @@ pub struct ConnectionPair {
     pub index: usize,
 }
 
-impl From<&ZGConnectionPair> for ConnectionPair {
-    fn from(raw: &ZGConnectionPair) -> Self {
+impl From<ZGConnectionPair> for ConnectionPair {
+    fn from(raw: ZGConnectionPair) -> Self {
         Self {
             object: Object(raw.object),
             index: raw.letIndex as usize,
