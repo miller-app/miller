@@ -122,7 +122,7 @@ impl From<*mut ZGObject> for Object {
 ///
 /// Coordinates are represented as floats and are real valued, though Pd uses only non-negative
 /// values.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ObjectPosition {
     /// X position.
     pub x: f32,

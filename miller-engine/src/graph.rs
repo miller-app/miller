@@ -65,7 +65,7 @@ impl Graph {
     ///
     /// The [object::ObjectPosition] is only relevant for input/~ and output/~ objects, otherwise
     /// `None` may be specified.
-    pub fn add_object(&self, object: &str, position: Option<ObjectPosition>) {
+    pub fn add_object(&self, object: &str, position: Option<ObjectPosition>) -> Object {
         unsafe {
             let object =
                 CString::new(object).expect(&format!("Can't build CString from {}", object));
@@ -74,7 +74,8 @@ impl Graph {
             } else {
                 (0.0, 0.0)
             };
-            zg_graph_add_new_object(self.0, object.as_ptr(), x, y);
+
+            zg_graph_add_new_object(self.0, object.as_ptr(), x, y).into()
         }
     }
 
@@ -135,8 +136,61 @@ impl Graph {
 
 impl Drop for Graph {
     fn drop(&mut self) {
-        unsafe {
-            zg_graph_delete(self.0);
-        }
+        // XXX We don't need it as when we delete the context, all its graphs are deleted as well.
+        // Implementation of Drop for the Graph this way will lead to problems.
+        // I keep it just for reference and to forbid its implementation.
+        // unsafe {
+        // zg_graph_delete(self.0);
+        // }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::context::{AudioLoopF32, Config};
+
+    use super::*;
+
+    #[test]
+    fn new_empty() {
+        let context = init_test_context();
+        let _ = Graph::new_empty(&context);
+    }
+
+    #[test]
+    fn from_file() {
+        let context = init_test_context();
+        let _ = Graph::from_file(&context, "test/send_message.pd").unwrap();
+    }
+
+    #[test]
+    fn from_string() {
+        let context = init_test_context();
+        let contents = std::fs::read_to_string("test/send_message.pd").unwrap();
+        let _ = Graph::from_str(&context, &contents);
+    }
+
+    #[test]
+    fn add_object() {
+        let context = init_test_context();
+        let graph = Graph::new_empty(&context);
+        graph.attach();
+
+        let obj_str = "osc~ 440";
+        let object = graph.add_object(obj_str, Some((10.0, 20.0).into()));
+
+        assert_eq!(object.to_string(), obj_str.to_string());
+        assert_eq!(object.position(), ObjectPosition::from((10.0, 20.0)));
+    }
+
+    fn init_test_context() -> Context<DummyDispatcher, AudioLoopF32> {
+        Context::<DummyDispatcher, AudioLoopF32>::new(Config::default(), 0).unwrap()
+    }
+
+    #[derive(Debug)]
+    struct DummyDispatcher;
+
+    impl Dispatcher for DummyDispatcher {
+        type UserData = u64;
     }
 }
