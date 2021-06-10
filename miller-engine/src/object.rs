@@ -163,3 +163,8 @@ impl From<&ZGConnectionPair> for ConnectionPair {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+}
