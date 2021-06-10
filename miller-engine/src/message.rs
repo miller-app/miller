@@ -62,9 +62,12 @@ impl Message {
         if raw_message.is_null() {
             return None;
         }
-        let mut message = MessageBuilder::default()
-            .with_timestamp(zg_message_get_timestamp(raw_message))
-            .build();
+        //TODO the better way would be copying memory pointed by raw_message and initializing the
+        //Message using it, but I didn't manage core::ptr::copy typing for that
+        let mut builder =
+            MessageBuilder::default().with_timestamp(zg_message_get_timestamp(raw_message));
+        builder.collect_elements_to_message(raw_message);
+        let mut message = builder.build();
         message.collect_elements_from_raw_message(raw_message);
         Some(message)
     }
