@@ -136,18 +136,17 @@ impl Graph {
 
 impl Drop for Graph {
     fn drop(&mut self) {
-        // XXX We don't need it as when we delete the context, all its graphs are deleted as well.
-        // Implementation of Drop for the Graph this way will lead to problems.
-        // I keep it just for reference and to forbid its implementation.
-        // unsafe {
-        // zg_graph_delete(self.0);
-        // }
+        unsafe {
+            self.detach();
+            zg_graph_delete(self.0);
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::context::{AudioLoopF32, Config};
+    use crate::message::{Message, MessageElement};
 
     use super::*;
 
@@ -183,14 +182,75 @@ mod tests {
         assert_eq!(object.position(), ObjectPosition::from((10.0, 20.0)));
     }
 
-    fn init_test_context() -> Context<DummyDispatcher, AudioLoopF32> {
-        Context::<DummyDispatcher, AudioLoopF32>::new(Config::default(), 0).unwrap()
+    #[test]
+    fn connection() {
+        let mut context = init_test_context();
+        let receiver_name = "connection-test-r";
+        context.register_receiver(receiver_name);
+        let graph = Graph::new_empty(&context);
+        let receiver = graph.add_object("receive outer-receive", None);
+        let sender = graph.add_object(&format!("send {}", receiver_name), None);
+        graph.attach();
+
+        // Add connection
+        send_message_and_process_block(&mut context);
+        assert_eq!(*context.user_data(), 0);
+
+        graph.add_connection((receiver, 0).into(), (sender, 0).into());
+        send_message_and_process_block(&mut context);
+        assert_eq!(*context.user_data(), 42);
+
+        // Remove connection
+        graph.remove_connection((receiver, 0).into(), (sender, 0).into());
+        *context.user_data_mut() = 0;
+        send_message_and_process_block(&mut context);
+        assert_eq!(*context.user_data(), 0);
+    }
+
+    #[test]
+    fn objects() {
+        let context = init_test_context();
+        let graph = Graph::new_empty(&context);
+        let osc = graph.add_object("osc~ 440", None);
+        let dac = graph.add_object("dac~", None);
+        let expected = vec![osc, dac];
+        assert_eq!(graph.objects(), expected);
+    }
+
+    #[test]
+    fn dollar_zero() {
+        let context = init_test_context();
+        for n in 1..10 {
+            let graph = Graph::new_empty(&context);
+            assert_eq!(graph.dollar_zero(), n);
+        }
+    }
+
+    fn init_test_context() -> Context<TestDispatcher, AudioLoopF32> {
+        Context::<TestDispatcher, AudioLoopF32>::new(Config::default(), 0).unwrap()
+    }
+
+    fn send_message_and_process_block(context: &mut Context<TestDispatcher, AudioLoopF32>) {
+        context.send_message(
+            "outer-receive",
+            Message::builder()
+                .with_element(MessageElement::Bang)
+                .build(),
+        );
+
+        for _ in 0..context.config().blocksize + 1 {
+            context.next_frame(&[0.0, 0.0]).unwrap();
+        }
     }
 
     #[derive(Debug)]
-    struct DummyDispatcher;
+    struct TestDispatcher;
 
-    impl Dispatcher for DummyDispatcher {
+    impl Dispatcher for TestDispatcher {
         type UserData = u64;
+
+        fn receiver_message(_name: String, _message: Option<Message>, data: &mut Self::UserData) {
+            *data = 42;
+        }
     }
 }

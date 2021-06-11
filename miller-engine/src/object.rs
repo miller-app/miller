@@ -13,7 +13,7 @@ use zengarden_raw::{
 use crate::message::Message;
 
 /// Represents an object in a [Graph].
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Object(pub(crate) *mut ZGObject);
 
 impl Object {
@@ -169,6 +169,12 @@ impl From<ZGConnectionPair> for ConnectionPair {
             object: Object(raw.object),
             index: raw.letIndex as usize,
         }
+    }
+}
+
+impl From<(Object, usize)> for ConnectionPair {
+    fn from((object, index): (Object, usize)) -> Self {
+        Self { object, index }
     }
 }
 

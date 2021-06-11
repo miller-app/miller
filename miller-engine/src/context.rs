@@ -180,7 +180,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     }
 
     /// Send a message to a receiver.
-    pub fn send_message(&mut self, receiver: &str, message: Message) {
+    pub fn send_message(&self, receiver: &str, message: Message) {
         unsafe {
             let raw_name = CString::new(receiver)
                 .expect(&format!("Can't initialize CString from {}", receiver));
@@ -209,6 +209,11 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
                 .expect(&format!("Can't initialize CString from {}", receiver));
             zg_context_unregister_receiver(*self.raw_context.read().unwrap(), raw_name.as_ptr());
         }
+    }
+
+    /// Borrow config.
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 }
 
