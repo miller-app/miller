@@ -7,7 +7,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -27,9 +27,9 @@ pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopErr
 /// configuration (i.e. sample rate, block size, etc.) and audio loop. Contexts aren't supposed to
 /// share data between each other, but there can be multiple graphs within a context, which may
 /// share data between themselves.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Context<D: Dispatcher, L: AudioLoop> {
-    pub(crate) raw_context: RwLock<*mut PdContext>,
+    pub(crate) raw_context: Arc<RwLock<*mut PdContext>>,
     config: Config,
     audio_loop: L,
     _dispatcher: PhantomData<D>,
@@ -37,13 +37,13 @@ pub struct Context<D: Dispatcher, L: AudioLoop> {
 
 impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     /// [Context] initializer.
-    pub fn new(config: Config, user_data: D::UserData) -> Result<Self, Error> {
+    pub fn new(config: Config) -> Result<Self, Error> {
         // Thread-safity for the user data is implemented on the ZenGarden's side. But in case of
         // threading issues this should be the first place to look.
         let mut result = Self {
             raw_context: Self::init_raw_context(
                 &config,
-                Box::into_raw(Box::new(user_data)) as *mut c_void,
+                Box::into_raw(Box::new(D::UserData::default())) as *mut c_void,
             )?,
             audio_loop: Default::default(),
             config: config.clone(),
@@ -58,7 +58,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     fn init_raw_context(
         config: &Config,
         user_data: *mut c_void,
-    ) -> Result<RwLock<*mut PdContext>, Error> {
+    ) -> Result<Arc<RwLock<*mut PdContext>>, Error> {
         let raw_context = unsafe {
             zg_context_new(
                 config.input_ch_num as i32,
@@ -74,7 +74,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
             return Err(Error::Initializing);
         }
 
-        Ok(RwLock::new(raw_context))
+        Ok(Arc::new(RwLock::new(raw_context)))
     }
 
     unsafe extern "C" fn raw_callback(
@@ -220,7 +220,10 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
 impl<D: Dispatcher, L: AudioLoop> Drop for Context<D, L> {
     fn drop(&mut self) {
         unsafe {
-            zg_context_delete(*(self.raw_context.write().unwrap()));
+            // we drop only the latest instance
+            if let Some(raw) = Arc::get_mut(&mut self.raw_context) {
+                zg_context_delete(*(raw.write().unwrap()));
+            }
         }
     }
 }
@@ -228,7 +231,7 @@ impl<D: Dispatcher, L: AudioLoop> Drop for Context<D, L> {
 /// Dispatcher, which you can implement to handle events from [Context].
 ///
 /// All methods are optional.
-pub trait Dispatcher: fmt::Debug {
+pub trait Dispatcher: fmt::Debug + Clone {
     /// The user data type, which will be passed to the dispatcher's methods.
     type UserData: Default;
 
@@ -337,10 +340,8 @@ mod tests {
 
     #[test]
     fn context_user_data() {
-        let expected = 42;
-        let context =
-            Context::<DummyDispatcher, AudioLoopF32>::new(Config::default(), expected).unwrap();
-        assert_eq!(expected, *context.user_data());
+        let context = Context::<DummyDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        assert_eq!(0, *context.user_data());
 
         let data = context.user_data_mut();
         *data = 27;
@@ -422,7 +423,7 @@ mod tests {
     }
 
     fn init_test_context<D: Dispatcher, L: AudioLoop>(file: &str) -> Context<D, L> {
-        let context = Context::<D, L>::new(Config::default(), D::UserData::default()).unwrap();
+        let context = Context::<D, L>::new(Config::default()).unwrap();
         let patch_dir_path = fs::canonicalize("./test/").unwrap();
         let patch_dir_str = patch_dir_path.to_str().unwrap();
 
@@ -442,11 +443,7 @@ mod tests {
 
     #[test]
     fn dispatcher() {
-        let context = Context::<TestDispatcher, AudioLoopF32>::new(
-            Config::default(),
-            TestUserData(String::new()),
-        )
-        .unwrap();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
         let data_ptr: *mut TestUserData = context.user_data_mut();
         let data_raw = data_ptr as *mut c_void;
 
@@ -546,7 +543,7 @@ mod tests {
         assert_eq!(expected, context.user_data().0);
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct TestDispatcher;
 
     impl Dispatcher for TestDispatcher {
@@ -590,7 +587,7 @@ mod tests {
     #[derive(Debug, Default)]
     struct TestUserData(String);
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct DummyDispatcher;
 
     impl Dispatcher for DummyDispatcher {

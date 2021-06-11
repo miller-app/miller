@@ -34,8 +34,8 @@ impl Object {
         }
     }
 
-    /// Get connection type at outlet.
-    pub fn connection_type(&self, outlet: usize) -> Connection {
+    /// Get outlet type.
+    pub fn outlet_type(&self, outlet: usize) -> OutletType {
         unsafe { zg_object_get_connection_type(self.0, outlet as u32).into() }
     }
 
@@ -136,16 +136,16 @@ impl From<(f32, f32)> for ObjectPosition {
     }
 }
 
-/// Connection type.
-#[derive(Debug, Clone, Copy)]
-pub enum Connection {
+/// Outlet type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OutletType {
     /// Message (control).
     Message,
     /// DSP (audio).
     Dsp,
 }
 
-impl From<ZGConnectionType> for Connection {
+impl From<ZGConnectionType> for OutletType {
     fn from(raw: ZGConnectionType) -> Self {
         match raw {
             ZGConnectionType::ZG_CONNECTION_MESSAGE => Self::Message,
@@ -155,7 +155,7 @@ impl From<ZGConnectionType> for Connection {
 }
 
 /// Indicates the object and the outlet/inlet index from/to which the connection are comming.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ConnectionPair {
     /// Object to/from which connection comes.
     pub object: Object,
@@ -180,5 +180,123 @@ impl From<(Object, usize)> for ConnectionPair {
 
 #[cfg(test)]
 mod tests {
+    use crate::context::*;
+    use crate::graph::Graph;
+    use crate::message::*;
+
     use super::*;
+
+    #[test]
+    fn position() {
+        let graph = init_test_graph();
+        let object = graph.add_object("osc~", None);
+
+        assert_eq!(object.position(), (0.0, 0.0).into());
+
+        let expected = ObjectPosition::from((10.0, 20.0));
+        let object = graph.add_object("osc~", Some(expected));
+
+        assert_eq!(object.position(), expected);
+
+        let expected = ObjectPosition::from((20.0, 10.0));
+        object.set_position(expected);
+        assert_eq!(object.position(), expected);
+    }
+
+    #[test]
+    fn outlet_type() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        assert_eq!(osc.outlet_type(0), OutletType::Dsp);
+    }
+
+    #[test]
+    fn connections() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        let dac = graph.add_object("dac~", None);
+        graph.add_connection((osc, 0).into(), (dac, 0).into());
+        graph.add_connection((osc, 0).into(), (dac, 1).into());
+
+        assert_eq!(
+            osc.connections_at_outlet(0),
+            vec![(dac, 0).into(), (dac, 1).into()]
+        );
+        assert_eq!(dac.connections_at_inlet(0), vec![(osc, 0).into()]);
+        assert_eq!(dac.connections_at_inlet(1), vec![(osc, 0).into()]);
+    }
+
+    #[test]
+    fn label() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        assert_eq!("obj".to_string(), osc.label());
+    }
+
+    #[test]
+    fn num_io() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        assert_eq!(2, osc.num_inlets());
+        assert_eq!(1, osc.num_outlets());
+    }
+
+    #[test]
+    fn remove() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        assert_eq!(graph.objects(), vec![osc]);
+        osc.remove();
+        assert_eq!(graph.objects(), vec![]);
+    }
+
+    #[test]
+    fn send_message() {
+        let mut context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let receiver_name = "connection-test-r";
+        context.register_receiver(receiver_name);
+        let graph = Graph::new_empty(context.clone());
+        let sender = graph.add_object(&format!("send {}", receiver_name), None);
+        graph.attach();
+
+        for _ in 0..context.config().blocksize + 1 {
+            context.next_frame(&[0.0, 0.0]).unwrap();
+        }
+
+        assert_eq!(*context.user_data(), 0);
+
+        sender.send_message(0, 
+            Message::builder()
+                .with_element(MessageElement::Bang)
+                .build());
+
+        for _ in 0..context.config().blocksize + 1 {
+            context.next_frame(&[0.0, 0.0]).unwrap();
+        }
+
+        assert_eq!(*context.user_data(), 27);
+    }
+
+    #[test]
+    fn to_string() {
+        let graph = init_test_graph();
+        let osc = graph.add_object("osc~", None);
+        assert_eq!(osc.to_string(), "osc~ 440".to_string());
+    }
+
+    fn init_test_graph() -> Graph<TestDispatcher, AudioLoopF32> {
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        Graph::new_empty(context)
+    }
+
+    #[derive(Debug, Clone)]
+    struct TestDispatcher;
+
+    impl Dispatcher for TestDispatcher {
+        type UserData = u64;
+
+        fn receiver_message(_name: String, _message: Option<Message>, data: &mut Self::UserData) {
+            *data = 27;
+        }
+    }
 }

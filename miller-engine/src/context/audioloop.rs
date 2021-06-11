@@ -4,7 +4,7 @@ use thiserror::Error;
 use zengarden_raw::{zg_context_process, zg_context_process_s, PdContext};
 
 /// Audio loop.
-pub trait AudioLoop: fmt::Debug + Default {
+pub trait AudioLoop: fmt::Debug + Default + Clone {
     /// Audio buffer sample type.
     type SampleType;
 
@@ -20,7 +20,7 @@ pub trait AudioLoop: fmt::Debug + Default {
 }
 
 /// [AudioLoop] implementation for 32-bit float sampled buffer.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AudioLoopF32 {
     frame_offset: usize,
     in_ch_num: usize,
@@ -91,7 +91,7 @@ impl AudioLoop for AudioLoopF32 {
 }
 
 /// [AudioLoop] implementation for 16-bit integer sampled buffer.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AudioLoopI16 {
     frame_offset: usize,
     in_ch_num: usize,

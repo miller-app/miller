@@ -14,23 +14,27 @@ use crate::object::{ConnectionPair, Object, ObjectPosition};
 
 /// A graph is a collection of objects and the connections between them. A [Graph] is a subclass of
 /// [object::Object], and thus [Graph]s can contain other [Graph]s (such as abstraction or
-/// subgraphs).  However, this does not mean that [Graph]s and [object::Object]s are
-/// interchangeable in the API.  Specific functions are made available for each.
+/// subgraphs). However, this does not mean that [Graph]s and [object::Object]s are
+/// interchangeable in the API. Specific functions are made available for each.
+// We should either indicate the lifetime, so we prevent freeing context earlier then the graph, or
+// keep a context instance inside. As for lifetime we need to bother about borrowing rules (can't
+// borrow mutably while already borrowed immutable), keeping a reference makes it a lot easier to
+// use with very little memory overhead.
 #[derive(Debug)]
-pub struct Graph(*mut ZGGraph);
+pub struct Graph<D: Dispatcher, L: AudioLoop>(*mut ZGGraph, Context<D, L>);
 
-impl Graph {
+impl<D: Dispatcher, L: AudioLoop> Graph<D, L> {
     /// Initialize a new empty graph.
-    pub fn new_empty<D: Dispatcher, L: AudioLoop>(context: &Context<D, L>) -> Self {
+    pub fn new_empty(context: Context<D, L>) -> Self {
         unsafe {
             let raw_ptr = zg_context_new_empty_graph(*context.raw_context.read().unwrap());
-            Self(raw_ptr)
+            Self(raw_ptr, context)
         }
     }
 
     /// Initialize a graph from a Pd file.
-    pub fn from_file<D: Dispatcher, L: AudioLoop>(
-        context: &Context<D, L>,
+    pub fn from_file(
+        context: Context<D, L>,
         file: &str,
     ) -> Result<Self, Anyhow> {
         unsafe {
@@ -41,12 +45,12 @@ impl Graph {
                 contents.as_ptr(),
             );
 
-            Ok(Self(raw_ptr))
+            Ok(Self(raw_ptr, context))
         }
     }
 
     /// Initialize a graph from a Pd file content.
-    pub fn from_str<D: Dispatcher, L: AudioLoop>(context: &Context<D, L>, string: &str) -> Self {
+    pub fn from_str(context: Context<D, L>, string: &str) -> Self {
         unsafe {
             let contents = CString::new(string).expect("Can't build CString from netlist");
             let raw_ptr = zg_context_new_graph_from_string(
@@ -54,7 +58,7 @@ impl Graph {
                 contents.as_ptr(),
             );
 
-            Self(raw_ptr)
+            Self(raw_ptr, context)
         }
     }
 
@@ -134,7 +138,7 @@ impl Graph {
     }
 }
 
-impl Drop for Graph {
+impl<D: Dispatcher, L: AudioLoop> Drop for Graph<D, L> {
     fn drop(&mut self) {
         unsafe {
             self.detach();
@@ -153,26 +157,26 @@ mod tests {
     #[test]
     fn new_empty() {
         let context = init_test_context();
-        let _ = Graph::new_empty(&context);
+        let _ = Graph::new_empty(context);
     }
 
     #[test]
     fn from_file() {
         let context = init_test_context();
-        let _ = Graph::from_file(&context, "test/send_message.pd").unwrap();
+        let _ = Graph::from_file(context, "test/send_message.pd").unwrap();
     }
 
     #[test]
     fn from_string() {
         let context = init_test_context();
         let contents = std::fs::read_to_string("test/send_message.pd").unwrap();
-        let _ = Graph::from_str(&context, &contents);
+        let _ = Graph::from_str(context, &contents);
     }
 
     #[test]
     fn add_object() {
         let context = init_test_context();
-        let graph = Graph::new_empty(&context);
+        let graph = Graph::new_empty(context);
         graph.attach();
 
         let obj_str = "osc~ 440";
@@ -187,7 +191,7 @@ mod tests {
         let mut context = init_test_context();
         let receiver_name = "connection-test-r";
         context.register_receiver(receiver_name);
-        let graph = Graph::new_empty(&context);
+        let graph = Graph::new_empty(context.clone());
         let receiver = graph.add_object("receive outer-receive", None);
         let sender = graph.add_object(&format!("send {}", receiver_name), None);
         graph.attach();
@@ -210,7 +214,7 @@ mod tests {
     #[test]
     fn objects() {
         let context = init_test_context();
-        let graph = Graph::new_empty(&context);
+        let graph = Graph::new_empty(context);
         let osc = graph.add_object("osc~ 440", None);
         let dac = graph.add_object("dac~", None);
         let expected = vec![osc, dac];
@@ -221,13 +225,13 @@ mod tests {
     fn dollar_zero() {
         let context = init_test_context();
         for n in 1..10 {
-            let graph = Graph::new_empty(&context);
+            let graph = Graph::new_empty(context.clone());
             assert_eq!(graph.dollar_zero(), n);
         }
     }
 
     fn init_test_context() -> Context<TestDispatcher, AudioLoopF32> {
-        Context::<TestDispatcher, AudioLoopF32>::new(Config::default(), 0).unwrap()
+        Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap()
     }
 
     fn send_message_and_process_block(context: &mut Context<TestDispatcher, AudioLoopF32>) {
@@ -243,7 +247,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct TestDispatcher;
 
     impl Dispatcher for TestDispatcher {
