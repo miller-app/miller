@@ -26,7 +26,7 @@ fn main() {
         .with_out_ch_num(config.channels);
 
     let mut context =
-        ContextWrapper(Context::<ContextDispatcher, AudioLoopF32>::new(context_config, 0).unwrap());
+        ContextWrapper(Context::<ContextDispatcher, AudioLoopF32>::new(context_config).unwrap());
 
     // unsafe {
     // let dir = CString::new("/Users/alestsurko/Desktop/miller/").unwrap();
@@ -68,7 +68,7 @@ struct ContextWrapper(Context<ContextDispatcher, AudioLoopF32>);
 unsafe impl Send for ContextWrapper {}
 unsafe impl Sync for ContextWrapper {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct ContextDispatcher;
 
 impl Dispatcher for ContextDispatcher {
