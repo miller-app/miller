@@ -57,3 +57,4 @@ pub mod context;
 pub mod graph;
 pub mod message;
 pub mod object;
+pub mod table;
