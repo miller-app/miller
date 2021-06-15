@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libsndfile
-          brew install llvm
+          brew install gcc
 
       - name: Cache Cargo
         uses: actions/cache@v2
