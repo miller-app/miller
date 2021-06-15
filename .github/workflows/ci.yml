@@ -41,7 +41,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: brew install libsndfile
+        run: |
+          brew install libsndfile
+          brew install llvm
 
       - name: Cache Cargo
         uses: actions/cache@v2

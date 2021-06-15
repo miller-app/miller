@@ -20,7 +20,6 @@ use zengarden_raw::{
 use zengarden_raw::{zg_context_register_receiver, zg_context_send_message};
 
 use crate::message::Message;
-use crate::object::Object;
 
 pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopError};
 
