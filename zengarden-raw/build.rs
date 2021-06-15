@@ -36,6 +36,11 @@ fn compile(sources: Vec<PathBuf>) {
         .files(sources)
         .warnings(false);
 
+    if cfg!(target_os = "macos") {
+        env::set_var("CC", "gcc");
+        env::set_var("CXX", "g++");
+    }
+
     if cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
         env::set_var("CXX", "g++");
