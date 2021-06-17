@@ -81,7 +81,9 @@ pub trait MessageObject<D: Dispatcher, L: AudioLoop>: ToString {
     fn object_type(&self) -> ObjectType;
 
     /// Returns `true` if this object processes audio, `false` otherwise.
-    fn does_process_audio(&self) -> bool;
+    fn does_process_audio(&self) -> bool {
+        false
+    }
 
     /// Returns `true` if this object should distribute the elements of the incoming message across
     /// the inlets. A message is otherwise only distributed if the message arrives on the left-most
@@ -153,5 +155,59 @@ pub enum ObjectType {
     ObjectUnknown,
 }
 
-/// The DSP object.
-pub trait DspObject<D: Dispatcher, L: AudioLoop>: MessageObject<D, L> {}
+/// A `DspObject` is the trait for any object which processes audio. `DspObject` is a subtrait of
+/// [MessageObject], such that all of the former can implicitly also process [message::Message]s.
+pub trait DspObject<D: Dispatcher, L: AudioLoop>: MessageObject<D, L> {
+    /// Overriden [MessageObject::should_distribute_message_to_inlets] to return `false` by
+    /// default.
+    fn should_distribute_message_to_inlets(&self) -> bool {
+        false
+    }
+
+    /// Process audio buffers in this block.
+    fn process(&mut self, from: usize, to: usize);
+
+    /// Set DSP buffer at inlet.
+    fn set_buffer_at_inlet(&self, _buffer: &[f32], _inlet: usize) {}
+
+    /// Set DSP buffer at outlet.
+    fn set_buffer_at_outlet(&self, _buffer: &[f32], _outlet: usize) {}
+
+    /// Get DSP buffer at inlet.
+    fn buffer_at_inlet(&self, inlet: usize) -> &[f32];
+
+    /// Get DSP buffer at outlet.
+    fn buffer_at_outlet(&self, outlet: usize) -> &[f32];
+
+    /// Returns `true` (default) if a buffer from the Buffer Pool should set at the given outlet.
+    /// `false` otherwise.
+    fn can_set_buffer_at_outlet(&self, _outlet: usize) -> bool {
+        true
+    }
+
+    /// Overriden [MessageObject::does_process_audio] to return `true` by default.
+    fn does_process_audio(&self) -> bool {
+        true
+    }
+
+    /// Get the number of DSP-only inlets.
+    fn num_dsp_inlets(&self) -> usize;
+
+    /// Get the number of DSP-only outlets.
+    fn num_dsp_outlets(&self) -> usize;
+
+    /// Get DSP-only connections at inlet.
+    fn dsp_connections_at_inlet(&self, _inlet: usize) -> Vec<ConnectionPair> {
+        Vec::new()
+    }
+
+    /// Get DSP-only connections at outlet.
+    fn dsp_connections_at_outlet(&self, _outlet: usize) -> Vec<ConnectionPair> {
+        Vec::new()
+    }
+
+    /// Get object label.
+    fn label(&self) -> String {
+        "obj~".to_string()
+    }
+}
