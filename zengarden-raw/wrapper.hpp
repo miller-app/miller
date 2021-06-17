@@ -2,4 +2,5 @@
 // ./fetch_sources.sh
 #include "ZGCallbackFunction.h"
 #include "ZenGarden.h"
+#include "ObjectType.h"
 #include "PdMessage.h"

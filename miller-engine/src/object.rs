@@ -1,5 +1,7 @@
 //! To work with objects in a graph use [Object] type.
 
+pub mod external;
+
 use std::ffi::CStr;
 
 use zengarden_raw::{
