@@ -15,12 +15,16 @@ clone_repo() {
 }
 
 mv_headers() {
-    mv "$zen_src/src/*.h" "$zen_src"
+    mv "$zen_src/src/"*.h "$zen_src"
 }
 
 rm_unused() {
     cd "$zen_src" || exit
-    rm -rf !(*.h)
+    to_delete=$(find . -not \( -name '*.h' -or -name '.' -or -name '..' \))
+
+    for item in $to_delete; do
+        rm -rf "$item"
+    done
 
     cd - || exit
 }

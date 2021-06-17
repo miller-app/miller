@@ -453,6 +453,7 @@ name = "miller-engine"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "cc",
  "serde",
  "thiserror",
  "zengarden-raw",
