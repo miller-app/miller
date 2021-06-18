@@ -1,7 +1,8 @@
 fn main() {
     cc::Build::new()
         .include("src/cpp")
-        .file("src/cpp/message_obj_wrapper.h")
+        .include("src/cpp/headers")
+        // .file("src/cpp/message_obj_wrapper.h")
         .file("src/cpp/message_obj_wrapper.cpp")
         .cpp(true)
         .flag("-std=c++11")

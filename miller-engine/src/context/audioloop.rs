@@ -6,7 +6,7 @@ use zengarden_raw::{zg_context_process, zg_context_process_s, PdContext};
 /// Audio loop.
 pub trait AudioLoop: fmt::Debug + Default + Clone {
     /// Audio buffer sample type.
-    type SampleType;
+    type SampleType: Copy;
 
     /// Initialize buffers. May behave as re-initializer.
     fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16);
@@ -160,7 +160,7 @@ impl AudioLoop for AudioLoopI16 {
 }
 
 /// Audio loop error.
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, Error)]
 pub enum Error {
     /// The size of the input frame isn't equal to the number of the input channels.
     #[error("Wrong input frame size. The size should be equal to the number of input channels.")]

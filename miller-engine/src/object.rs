@@ -190,7 +190,8 @@ mod tests {
 
     #[test]
     fn position() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let object = graph.add_object("osc~", None);
 
         assert_eq!(object.position(), (0.0, 0.0).into());
@@ -207,14 +208,16 @@ mod tests {
 
     #[test]
     fn outlet_type() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         assert_eq!(osc.outlet_type(0), OutletType::Dsp);
     }
 
     #[test]
     fn connections() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         let dac = graph.add_object("dac~", None);
         graph.add_connection((osc, 0).into(), (dac, 0).into());
@@ -230,14 +233,16 @@ mod tests {
 
     #[test]
     fn label() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         assert_eq!("obj".to_string(), osc.label());
     }
 
     #[test]
     fn num_io() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         assert_eq!(2, osc.num_inlets());
         assert_eq!(1, osc.num_outlets());
@@ -245,7 +250,8 @@ mod tests {
 
     #[test]
     fn remove() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         assert_eq!(graph.objects(), vec![osc]);
         osc.remove();
@@ -254,10 +260,10 @@ mod tests {
 
     #[test]
     fn send_message() {
-        let mut context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
         let receiver_name = "connection-test-r";
         context.register_receiver(receiver_name);
-        let graph = Graph::new_empty(context.clone());
+        let graph = Graph::new_empty(&context);
         let sender = graph.add_object(&format!("send {}", receiver_name), None);
         graph.attach();
 
@@ -281,14 +287,10 @@ mod tests {
 
     #[test]
     fn to_string() {
-        let graph = init_test_graph();
+        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
+        let graph = Graph::new_empty(&context);
         let osc = graph.add_object("osc~", None);
         assert_eq!(osc.to_string(), "osc~ 440".to_string());
-    }
-
-    fn init_test_graph() -> Graph<TestDispatcher, AudioLoopF32> {
-        let context = Context::<TestDispatcher, AudioLoopF32>::new(Config::default()).unwrap();
-        Graph::new_empty(context)
     }
 
     #[derive(Debug, Clone)]

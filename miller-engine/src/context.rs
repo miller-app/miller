@@ -7,7 +7,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Mutex};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -31,7 +31,7 @@ pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopErr
 pub struct Context<D: Dispatcher, L: AudioLoop> {
     pub(crate) raw_context: Arc<RwLock<*mut PdContext>>,
     config: Config,
-    audio_loop: L,
+    audio_loop: Arc<Mutex<L>>,
     _dispatcher: PhantomData<D>,
 }
 
@@ -40,7 +40,7 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     pub fn new(config: Config) -> Result<Self, Error> {
         // Thread-safity for the user data is implemented on the ZenGarden's side. But in case of
         // threading issues this should be the first place to look.
-        let mut result = Self {
+        let result = Self {
             raw_context: Self::init_raw_context(
                 &config,
                 Box::into_raw(Box::new(D::UserData::default())) as *mut c_void,
@@ -146,8 +146,8 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         }
     }
 
-    fn init_buffers(&mut self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
-        self.audio_loop
+    fn init_buffers(&self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
+        self.audio_loop.lock().unwrap()
             .init_buffers(blocksize, in_ch_num, out_ch_num);
     }
 
@@ -172,11 +172,11 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     /// The `in_frame` argument is an input stream frame of interleaved 32-bit floating point
     /// samples. It should be equal in size to the number of input channels.
     pub fn next_frame(
-        &mut self,
+        &self,
         in_frame: &[L::SampleType],
-    ) -> Result<&[L::SampleType], AudioLoopError> {
+    ) -> Result<Vec<L::SampleType>, AudioLoopError> {
         let raw_context = self.raw_context.read().unwrap();
-        self.audio_loop.next_frame(*raw_context, in_frame)
+        self.audio_loop.lock().unwrap().next_frame(*raw_context, in_frame).map(ToOwned::to_owned)
     }
 
     /// Send a message to a receiver.
@@ -351,7 +351,7 @@ mod tests {
 
     #[test]
     fn context_next_frame_f32() {
-        let mut context = init_test_context::<DummyDispatcher, AudioLoopF32>("loop_with_input.pd");
+        let context = init_test_context::<DummyDispatcher, AudioLoopF32>("loop_with_input.pd");
 
         let input = 0..context.config.blocksize * context.config.input_ch_num * 2;
 
@@ -379,7 +379,7 @@ mod tests {
 
     #[test]
     fn context_next_frame_i16() {
-        let mut context = init_test_context::<DummyDispatcher, AudioLoopI16>("loop_with_input.pd");
+        let context = init_test_context::<DummyDispatcher, AudioLoopI16>("loop_with_input.pd");
 
         let input = 0_..(context.config.blocksize * context.config.input_ch_num * 2) as i16;
 
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn context_send_message() {
-        let mut context = init_test_context::<TestDispatcher, AudioLoopF32>("send_message.pd");
+        let context = init_test_context::<TestDispatcher, AudioLoopF32>("send_message.pd");
         let message = Message::builder()
             .with_element(MessageElement::Symbol("baz".to_string()))
             .build();

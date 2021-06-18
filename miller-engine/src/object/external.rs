@@ -3,13 +3,14 @@
 //! There are objects which only process messages, the [MessageObject], and those objects which
 //! process messages and audio, the [DspObject].
 
+use zengarden_raw::PdMessage;
+
 use super::{ConnectionPair, ObjectPosition, OutletType};
-use crate::context::{AudioLoop, Dispatcher};
 use crate::graph::Graph;
 use crate::message::Message;
 
 /// The message object.
-pub trait MessageObject<D: Dispatcher, L: AudioLoop>: ToString {
+pub trait MessageObject: ToString {
     /// The generic entrypoint of a message to an object. This function usually either passes the
     /// message directly to [MessageObject::process_message] in the case of an object which only
     /// processes messages, or queues the message for later processing.
@@ -100,7 +101,7 @@ pub trait MessageObject<D: Dispatcher, L: AudioLoop>: ToString {
     fn is_leaf_node(&self) -> bool;
 
     /// Returns an ordered list of all parent objects of this object.
-    fn process_order(&self) -> Vec<Box<dyn DspObject<D, L>>>;
+    fn process_order(&self) -> Vec<Box<dyn DspObject>>;
 
     /// Reset the `is_ordered` flag to `false`. This is necessary in order to recompute the process
     /// order.
@@ -113,7 +114,7 @@ pub trait MessageObject<D: Dispatcher, L: AudioLoop>: ToString {
     fn num_outlets(&self) -> usize;
 
     /// Get graph in which this object exists.
-    fn graph(&self) -> Graph<D, L>;
+    fn graph(&self) -> Graph<'_>;
 
     /// Get position on the canvas.
     fn position(&self) -> ObjectPosition;
@@ -157,7 +158,7 @@ pub enum ObjectType {
 
 /// A `DspObject` is the trait for any object which processes audio. `DspObject` is a subtrait of
 /// [MessageObject], such that all of the former can implicitly also process [message::Message]s.
-pub trait DspObject<D: Dispatcher, L: AudioLoop>: MessageObject<D, L> {
+pub trait DspObject: MessageObject {
     /// Overriden [MessageObject::should_distribute_message_to_inlets] to return `false` by
     /// default.
     fn should_distribute_message_to_inlets(&self) -> bool {
@@ -209,5 +210,20 @@ pub trait DspObject<D: Dispatcher, L: AudioLoop>: MessageObject<D, L> {
     /// Get object label.
     fn label(&self) -> String {
         "obj~".to_string()
+    }
+}
+
+#[doc(hidden)]
+pub struct MessageObjAdapter(pub Box<dyn MessageObject>);
+
+#[doc(hidden)]
+#[no_mangle]
+unsafe extern "C" fn message_obj_receive_message(
+    adapter: *mut MessageObjAdapter,
+    inlet: usize,
+    message: *mut PdMessage,
+) {
+    if let Some(message) = Message::from_raw(message) {
+        (*adapter).0.receive_message(inlet, message);
     }
 }
