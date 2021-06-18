@@ -227,3 +227,27 @@ unsafe extern "C" fn message_obj_receive_message(
         (*adapter).0.receive_message(inlet, message);
     }
 }
+
+#[doc(hidden)]
+#[no_mangle]
+unsafe extern "C" fn message_obj_process_message(
+    adapter: *mut MessageObjAdapter,
+    inlet: usize,
+    message: *mut PdMessage,
+) {
+    if let Some(message) = Message::from_raw(message) {
+        (*adapter).0.process_message(inlet, message);
+    }
+}
+
+#[doc(hidden)]
+#[no_mangle]
+unsafe extern "C" fn message_obj_send_message(
+    adapter: *mut MessageObjAdapter,
+    outlet: usize,
+    message: *mut PdMessage,
+) {
+    if let Some(message) = Message::from_raw(message) {
+        (*adapter).0.send_message(outlet, message);
+    }
+}

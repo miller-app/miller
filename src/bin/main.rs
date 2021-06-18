@@ -48,7 +48,7 @@ fn main() {
                 while offset < data.len() {
                     let frame = context.0.next_frame(&[0.0, 0.0]).unwrap();
                     let end = offset + frame.len();
-                    data[offset..end].copy_from_slice(frame);
+                    data[offset..end].copy_from_slice(&frame);
                     offset = end;
                 }
             },
