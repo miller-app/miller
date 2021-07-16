@@ -3,7 +3,7 @@
 //! There are objects which only process messages, the [MessageObject], and those objects which
 //! process messages and audio, the [DspObject].
 
-use zengarden_raw::PdMessage;
+use zengarden_raw::{PdMessage, ZGGraph, ZGObject};
 
 use super::{ConnectionPair, ObjectPosition, OutletType};
 use crate::graph::Graph;
@@ -214,7 +214,17 @@ pub trait DspObject: MessageObject {
 }
 
 #[doc(hidden)]
+#[repr(C)]
 pub struct MessageObjAdapter(pub Box<dyn MessageObject>);
+
+extern "C" {
+    fn init_obj_wrapper(
+        num_ins: i32,
+        num_outs: i32,
+        graph: *mut ZGGraph,
+        adapter: *mut MessageObjAdapter,
+    ) -> *mut ZGObject;
+}
 
 #[doc(hidden)]
 #[no_mangle]

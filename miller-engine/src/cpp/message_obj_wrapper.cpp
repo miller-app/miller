@@ -1,10 +1,14 @@
 #include "message_obj_wrapper.h"
 
+MessageObject *init_obj_wrapper(int num_ins, int num_outs, PdGraph *graph,
+                                MessageObjAdapter *adapter) {
+    return new MessageObjWrapper(num_ins, num_outs, graph, adapter);
+}
+
 MessageObjWrapper::MessageObjWrapper(int numMessageInlets,
                                      int numMessageOutlets, PdGraph *graph_,
                                      MessageObjAdapter *adapter_)
     : MessageObject(numMessageInlets, numMessageOutlets, graph_) {
-    graph = graph_;
     adapter = adapter_;
 }
 

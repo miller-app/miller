@@ -58,7 +58,8 @@ impl Message {
         }
     }
 
-    pub(crate) unsafe fn from_raw(raw_message: *mut ZGMessage) -> Option<Self> {
+    /// Initialize message from raw type.
+    pub unsafe fn from_raw(raw_message: *mut ZGMessage) -> Option<Self> {
         if raw_message.is_null() {
             return None;
         }

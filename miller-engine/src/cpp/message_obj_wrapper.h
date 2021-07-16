@@ -85,4 +85,10 @@ extern "C" void message_obj_process_message(MessageObjAdapter *adapter,
 extern "C" void message_obj_send_message(MessageObjAdapter *adapter,
                                          size_t outlet, PdMessage *message);
 
+// C FFI
+
+extern "C" MessageObject *init_obj_wrapper(int num_ins, int num_outs,
+                                           PdGraph *graph_,
+                                           MessageObjAdapter *adapter);
+
 #endif // _MESSAGE_OBJ_WRAPPER_H_

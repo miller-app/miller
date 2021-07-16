@@ -46,6 +46,11 @@ impl<'a> Graph<'a> {
         }
     }
 
+    /// Initialize graph from raw type.
+    pub fn from_raw(raw: *mut ZGGraph) -> Self {
+        Self(raw, Default::default())
+    }
+
     /// Initialize a graph from a Pd file content.
     pub fn from_str<D: Dispatcher, L: AudioLoop>(context: Context<D, L>, string: &str) -> Self {
         unsafe {

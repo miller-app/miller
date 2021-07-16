@@ -7,7 +7,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -17,9 +17,14 @@ use zengarden_raw::{
     zg_context_unregister_receiver, PdContext, ZGCallbackFunction, ZGMessage,
     ZGReceiverMessagePair,
 };
-use zengarden_raw::{zg_context_register_receiver, zg_context_send_message};
+use zengarden_raw::{
+    zg_context_register_external_object, zg_context_register_receiver, zg_context_send_message,
+    ZGGraph, ZGObject,
+};
 
+use crate::graph::Graph;
 use crate::message::Message;
+use crate::object::external::MessageObject;
 
 pub use audioloop::{AudioLoop, AudioLoopF32, AudioLoopI16, Error as AudioLoopError};
 
@@ -147,7 +152,9 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     }
 
     fn init_buffers(&self, blocksize: u16, in_ch_num: u16, out_ch_num: u16) {
-        self.audio_loop.lock().unwrap()
+        self.audio_loop
+            .lock()
+            .unwrap()
             .init_buffers(blocksize, in_ch_num, out_ch_num);
     }
 
@@ -176,7 +183,11 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
         in_frame: &[L::SampleType],
     ) -> Result<Vec<L::SampleType>, AudioLoopError> {
         let raw_context = self.raw_context.read().unwrap();
-        self.audio_loop.lock().unwrap().next_frame(*raw_context, in_frame).map(ToOwned::to_owned)
+        self.audio_loop
+            .lock()
+            .unwrap()
+            .next_frame(*raw_context, in_frame)
+            .map(ToOwned::to_owned)
     }
 
     /// Send a message to a receiver.
@@ -214,6 +225,24 @@ impl<D: Dispatcher, L: AudioLoop> Context<D, L> {
     /// Borrow config.
     pub fn config(&self) -> &Config {
         &self.config
+    }
+
+    /// Register an external such that the context can instantiate instances of it. If an object
+    /// with the same label already exists, then the factory method is replaced with the new one.
+    pub fn register_external(
+        &self,
+        name: &str,
+        factory: unsafe extern "C" fn(*mut ZGMessage, *mut ZGGraph) -> *mut ZGObject
+    ) {
+        unsafe {
+
+            let raw_str = CString::new(name).expect("Can't initialize external name");
+            zg_context_register_external_object(
+                *self.raw_context.read().unwrap(),
+                raw_str.as_ptr(),
+                Some(factory),
+            );
+        }
     }
 }
 

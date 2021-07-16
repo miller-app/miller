@@ -25,7 +25,7 @@ fn main() {
         .with_in_ch_num(config.channels)
         .with_out_ch_num(config.channels);
 
-    let mut context =
+    let context =
         ContextWrapper(Context::<ContextDispatcher, AudioLoopF32>::new(context_config).unwrap());
 
     // unsafe {
